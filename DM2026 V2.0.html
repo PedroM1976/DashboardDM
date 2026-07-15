@@ -5,25 +5,32 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dashboard de Vendas DM</title>
 <script>
-// A biblioteca Excel é carregada com alternativas para evitar falhas de um único CDN.
+// Leitor Excel com CDN oficial prioritário, timeout e alternativas para GitHub Pages.
 window.__xlsxReady = (async function(){
   if (window.XLSX) return window.XLSX;
   const sources = [
-    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
+    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
   ];
+  const loadScript = src => new Promise((resolve,reject)=>{
+    const sc=document.createElement('script');
+    let done=false;
+    const finish=(ok,err)=>{
+      if(done) return; done=true; clearTimeout(timeout);
+      sc.onload=sc.onerror=null;
+      if(ok && window.XLSX) resolve(window.XLSX);
+      else { try{sc.remove();}catch(_){} reject(err||new Error('Biblioteca inválida')); }
+    };
+    const timeout=setTimeout(()=>finish(false,new Error('Tempo excedido ao obter '+src)),10000);
+    sc.src=src; sc.async=true; sc.crossOrigin='anonymous';
+    sc.onload=()=>finish(true);
+    sc.onerror=()=>finish(false,new Error('Falha ao obter '+src));
+    document.head.appendChild(sc);
+  });
   for (const src of sources) {
-    try {
-      await new Promise((resolve,reject)=>{
-        const sc=document.createElement('script');
-        sc.src=src; sc.async=true;
-        sc.onload=()=>window.XLSX?resolve():reject(new Error('Biblioteca inválida'));
-        sc.onerror=()=>reject(new Error('Falha ao obter '+src));
-        document.head.appendChild(sc);
-      });
-      return window.XLSX;
-    } catch (_) {}
+    try { return await loadScript(src); } catch (_) {}
   }
   return null;
 })();
@@ -589,7 +596,7 @@ async function parseFile(file){
    rows=parseCSVText(await file.text());
  } else {
    const XLSXLib=window.XLSX || await window.__xlsxReady;
-   if(!XLSXLib) throw new Error('Não foi possível carregar o leitor de Excel. Confirme a ligação à internet ou guarde o ficheiro como CSV.');
+   if(!XLSXLib) throw new Error('Não foi possível carregar o leitor de Excel. A rede está a bloquear os servidores da biblioteca. Tente recarregar a página, desative temporariamente o bloqueador para este site ou carregue um CSV.');
    const buf=await file.arrayBuffer();
    const wb=XLSXLib.read(buf,{type:'array',cellDates:true});
    if(!wb.SheetNames || !wb.SheetNames.length) throw new Error('O Excel não contém folhas.');
