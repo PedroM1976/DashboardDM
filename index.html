@@ -222,7 +222,8 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 8px;
   <div id="drawerBody" class="drawer-body"></div>
 </aside>
 <script>
-let DATA=[], META={anos:[],vendedores:[],clientes:[],areas:[],grupos:[]}, currentFile=null, fileHandle=null, timer=null;
+let DATA=[], META={anos:[],vendedores:[],clientes:[],areas:[],grupos:[]}, currentFile=null, fileHandle=null, timer=null, autoExcelSource=false;
+const DEFAULT_EXCEL_FILE='Vendas_preenchido_062026.xlsx';
 const MONTHS=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const eur = new Intl.NumberFormat('pt-PT', {style:'currency', currency:'EUR', maximumFractionDigits:0});
 const eur2 = new Intl.NumberFormat('pt-PT', {style:'currency', currency:'EUR', maximumFractionDigits:2});
@@ -611,13 +612,41 @@ async function parseFile(file){
  $('footer').textContent=`${numf.format(DATA.length)} registos carregados · ${file.name} · última atualização: ${new Date().toLocaleString('pt-PT')}`;
  $('status').textContent=`Ficheiro carregado: ${file.name}. ${fileHandle?'Auto-refresh direto ativo.':'Pode usar “Atualizar agora” para reler o ficheiro selecionado.'}`;
 }
-async function reloadFile(){ try{ if(fileHandle){ currentFile=await fileHandle.getFile(); await parseFile(currentFile); } else if(currentFile){ await parseFile(currentFile); } else { $('status').textContent='Selecione primeiro um ficheiro Excel.'; } }catch(e){ $('status').textContent='Erro ao carregar: '+e.message; } }
+async function loadDefaultExcel(){
+ try{
+   $('status').textContent='A carregar automaticamente '+DEFAULT_EXCEL_FILE+'…';
+   const url=new URL(DEFAULT_EXCEL_FILE, window.location.href);
+   url.searchParams.set('_t',Date.now());
+   const response=await fetch(url.toString(),{cache:'no-store'});
+   if(!response.ok) throw new Error('HTTP '+response.status+' ao obter '+DEFAULT_EXCEL_FILE);
+   const blob=await response.blob();
+   currentFile=new File([blob],DEFAULT_EXCEL_FILE,{type:blob.type||'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',lastModified:Date.now()});
+   fileHandle=null;
+   autoExcelSource=true;
+   await parseFile(currentFile);
+   $('status').textContent='Ficheiro carregado automaticamente: '+DEFAULT_EXCEL_FILE+'. Atualização automática ativa a cada 1 minuto.';
+   startTimer();
+ }catch(e){
+   autoExcelSource=false;
+   $('status').textContent='Não foi possível carregar automaticamente '+DEFAULT_EXCEL_FILE+': '+e.message+'. Pode escolher o ficheiro manualmente.';
+ }
+}
+async function reloadFile(){
+ try{
+   if(autoExcelSource){ await loadDefaultExcel(); }
+   else if(fileHandle){ currentFile=await fileHandle.getFile(); await parseFile(currentFile); }
+   else if(currentFile){ await parseFile(currentFile); }
+   else { $('status').textContent='Selecione primeiro um ficheiro Excel.'; }
+ }catch(e){ $('status').textContent='Erro ao carregar: '+e.message; }
+}
 function startTimer(){ if(timer) clearInterval(timer); timer=setInterval(reloadFile,60000); }
-$('excelFile').addEventListener('change', async e=>{ currentFile=e.target.files && e.target.files[0]; fileHandle=null; if(currentFile){ await reloadFile(); startTimer(); if(DATA.length) $('status').textContent += ' Para acompanhar alterações no disco, use “Escolher com auto-refresh” no Chrome ou Edge.'; } });
-$('pickHandle').addEventListener('click', async()=>{ if(!window.showOpenFilePicker){ $('status').textContent='O auto-refresh direto do disco requer Chrome/Edge. Use o campo de upload ou abra este HTML num browser compatível.'; return; } try{ [fileHandle]=await window.showOpenFilePicker({types:[{description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx','.xlsm'],'application/vnd.ms-excel':['.xls']}}]}); currentFile=await fileHandle.getFile(); await parseFile(currentFile); startTimer(); }catch(e){ if(e.name!=='AbortError') $('status').textContent='Erro ao escolher ficheiro: '+e.message; } });
+$('excelFile').addEventListener('change', async e=>{ currentFile=e.target.files && e.target.files[0]; fileHandle=null; autoExcelSource=false; if(currentFile){ await reloadFile(); startTimer(); if(DATA.length) $('status').textContent += ' Para acompanhar alterações no disco, use “Escolher com auto-refresh” no Chrome ou Edge.'; } });
+$('pickHandle').addEventListener('click', async()=>{ autoExcelSource=false; if(!window.showOpenFilePicker){ $('status').textContent='O auto-refresh direto do disco requer Chrome/Edge. Use o campo de upload ou abra este HTML num browser compatível.'; return; } try{ [fileHandle]=await window.showOpenFilePicker({types:[{description:'Excel',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx','.xlsm'],'application/vnd.ms-excel':['.xls']}}]}); currentFile=await fileHandle.getFile(); await parseFile(currentFile); startTimer(); }catch(e){ if(e.name!=='AbortError') $('status').textContent='Erro ao escolher ficheiro: '+e.message; } });
 $('reloadBtn').addEventListener('click', reloadFile);
 $('pdfBtn').addEventListener('click', ()=>window.print());
 initTabs(); initSelects(); update();
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(loadDefaultExcel,150));
+else setTimeout(loadDefaultExcel,150);
 </script>
 <script id="dmEnhanceScript">
 (function(){
