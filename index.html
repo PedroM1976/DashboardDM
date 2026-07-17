@@ -130,6 +130,7 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 8px;
 <section class="filters">
   <div class="filter"><label>Ano</label><select id="ano"></select></div>
   <div class="filter"><label>Mês</label><select id="mes"></select></div>
+  <div class="filter"><label>Semana</label><select id="semana"></select></div>
   <div class="filter"><label>Vendedor</label><select id="vendedor"></select></div>
   <div class="filter"><label>Cliente</label><select id="cliente"></select></div>
   <div class="filter"><label>Área</label><select id="area"></select></div>
@@ -260,11 +261,19 @@ function rowToData(r){
  const valorLiquido=n(val(r,['VALOR LIQUIDO','VALOR LÍQUIDO','SEM IVA','VENDAS SEM IVA']));
  const valorIva=n(val(r,['IVA']));
  const valorTotalCalculado=valorLiquido+valorIva;
+ const margemRaw=val(r,['MARGEM']);
+ const custoRaw=val(r,['PCUSTO','PREÇO CUSTO','PRECO CUSTO','CUSTO']);
+ // Usa a margem do Excel quando estiver preenchida. Nas linhas novas em que
+ // MARGEM está vazia, calcula automaticamente VALOR LÍQUIDO - PCUSTO.
+ const margemCalculada=(margemRaw!==null && margemRaw!==undefined && String(margemRaw).trim()!=='')
+   ? n(margemRaw)
+   : valorLiquido-n(custoRaw);
  const areaRaw=cleanFilterLabel(val(r,['AREA DE NEGOCIO','ÁREA DE NEGÓCIO','AREA','ÁREA']));
  const areaFinal=(!areaRaw||['N/D','ND','NAO ATRIBUIDO','NÃO ATRIBUÍDO','SEM AREA','SEM ÁREA'].includes(norm(areaRaw)))?'CAMPOS LIVRES':areaRaw;
  return {
    ano:Number(n(val(r,['ANO','YEAR'])))||0,
    mes:Number(n(val(r,['MÊS','MES','MONTH'])))||0,
+   semana:cleanFilterLabel(val(r,['SEMANA','SEMANA ISO','Nº SEMANA','NUMERO SEMANA','NÚMERO SEMANA','WEEK'])),
    cliente:String(val(r,['CLIENTES','CLIENTE','CUSTOMER'])||'N/D'),
    grupo_cliente:String(val(r,['GRUPO CLIENTE'])||'N/D'),
    associado:String(val(r,['ASSOCIADO'])||'N/D'),
@@ -283,9 +292,9 @@ function rowToData(r){
    valor_liquido:valorLiquido,
    iva:valorIva,
    valor_total:valorTotalCalculado,
-   margem:n(val(r,['MARGEM'])),
+   margem:margemCalculada,
    comissao:n(val(r,['VALOR_COMISSAO','COMISSAO VENDEDOR','COMISSÃO VENDEDOR'])),
-   search_blob:norm(artigo+' '+desc)
+   search_blob:norm(artigo+' '+desc+' '+String(val(r,['CLIENTES','CLIENTE','CUSTOMER'])||''))
  };
 }
 function buildMeta(){
@@ -295,7 +304,8 @@ function buildMeta(){
    vendedores:canonicalizeField('vendedor'),
    clientes:canonicalizeField('cliente'),
    areas:canonicalizeField('area'),
-   grupos:canonicalizeField('grupo')
+   grupos:canonicalizeField('grupo'),
+   semanas:canonicalizeField('semana')
  };
 }
 function opt(select, value, text){ const o=document.createElement('option'); o.value=value; o.textContent=text; select.appendChild(o); }
@@ -326,6 +336,7 @@ function roleVisibleRows(rows){
 function initSelects(){
  const selectedMonth=String(($('mes')&&$('mes').value)||sessionStorage.getItem('dmSelectedMonth')||'');
  fillSelect('ano', META.anos);
+ fillSelect('semana', META.semanas||[]);
  const monthSelect=$('mes');
  if(monthSelect){
    monthSelect.innerHTML='<option value="">Todos</option>'+
@@ -344,6 +355,7 @@ function filtered(){
  const q=norm(($('artigoPesquisa')&&$('artigoPesquisa').value)||'');
  const yearValue=Number(($('ano')&&$('ano').value)||0);
  const monthValue=Number(($('mes')&&$('mes').value)||0);
+ const weekValue=cleanFilterLabel(($('semana')&&$('semana').value)||'');
  const sellerValue=($('vendedor')&&$('vendedor').value)||'';
  const clientValue=($('cliente')&&$('cliente').value)||'';
  const areaValue=($('area')&&$('area').value)||'';
@@ -351,6 +363,7 @@ function filtered(){
  return roleVisibleRows(DATA).filter(r=>
    (!yearValue||Number(r.ano)===yearValue)&&
    (!monthValue||Number(r.mes)===monthValue)&&
+   (!weekValue||cleanFilterLabel(r.semana)===weekValue)&&
    (!sellerValue||r.vendedor===sellerValue)&&
    (!clientValue||r.cliente===clientValue)&&
    (!areaValue||r.area===areaValue)&&
@@ -673,7 +686,7 @@ else setTimeout(loadDefaultExcel,150);
   const originalDetailRows=window.detailRows;
   const originalDetailLabel=window.detailLabel;
   function anyFilter(){
-    return ['ano','mes','vendedor','cliente','area','grupo','artigoPesquisa'].some(id=>{const e=document.getElementById(id);return e&&String(e.value||'').trim()!==''});
+    return ['ano','mes','semana','vendedor','cliente','area','grupo','distrito','artigoPesquisa'].some(id=>{const e=document.getElementById(id);return e&&String(e.value||'').trim()!==''});
   }
   function rowsForCharts(){return anyFilter()?filtered():DATA}
   window.detailRows=function(type,value){
@@ -758,7 +771,7 @@ const levels=[
 ];
 let drillIndex=0, drillPath=[];
 function hasActiveFilters(){
- return ['ano','mes','vendedor','cliente','area','grupo','artigoPesquisa'].some(id=>{const e=document.getElementById(id);return e&&String(e.value||'').trim()!==''});
+ return ['ano','mes','semana','vendedor','cliente','area','grupo','distrito','artigoPesquisa'].some(id=>{const e=document.getElementById(id);return e&&String(e.value||'').trim()!==''});
 }
 function weightedMarginPct(r){return r.sem_iva ? r.margem/r.sem_iva*100 : 0}
 function ensureUI(){
@@ -1196,7 +1209,9 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
     .credit{text-align:right;margin-top:20px;color:#64748b;font-size:11px;font-weight:bold}@page{size:A4 landscape;margin:12mm}</style></head><body>
     <div class="head"><div><h1>Calendário comercial</h1><div class="sub">${cEsc(calendarState.month.toLocaleDateString('pt-PT',{month:'long',year:'numeric'}))}</div></div>${logo?`<img src="${logo}">`:''}</div>
     <table><thead><tr><th>Data</th><th>Hora</th><th>Vendedor</th><th>Área de negócio</th><th>Assunto</th><th>Cliente</th></tr></thead><tbody>${events.map(e=>`<tr><td>${cEsc(e.date)}</td><td>${cEsc(e.time)}</td><td>${cEsc(e.seller)}</td><td>${cEsc(e.area||'')}</td><td>${cEsc(e.subject)}</td><td>${cEsc(e.client||'')}</td></tr>`).join('')}</tbody></table>
-    <div class="credit">Desenvolvido By Domingos &amp; Morgado</div><script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);
+    <div class="credit">Desenvolvido By Domingos &amp; Morgado</div><script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>
+
+</body></html>`);
     win.document.close();
   }
 
@@ -1275,7 +1290,8 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
         <div class="credit">Desenvolvido By Domingos &amp; Morgado</div>
       </section>
       <script>window.onload=()=>setTimeout(()=>window.print(),650)<\/script>
-    </body></html>`);
+
+</body></html>`);
     win.document.close();
   }
   function bind(){
@@ -1546,7 +1562,9 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
     <div class="kpis"><div class="kpi"><span>Sem IVA</span><b>${mMoney(sumRows(rows,'valor_liquido'))}</b></div><div class="kpi"><span>IVA</span><b>${mMoney(sumRows(rows,'iva'))}</b></div><div class="kpi"><span>Com IVA</span><b>${mMoney(sumRows(rows,'valor_total'))}</b></div><div class="kpi"><span>Margem</span><b>${mMoney(sumRows(rows,'margem'))}</b></div><div class="kpi"><span>Margem %</span><b>${(sumRows(rows,'valor_liquido')?sumRows(rows,'margem')/sumRows(rows,'valor_liquido')*100:0).toFixed(1).replace('.',',')}%</b></div></div>
     <div class="chart">${chartHtml}</div>
     <table><thead><tr><th>Descrição</th><th class="num">Sem IVA</th><th class="num">Com IVA</th><th class="num">Margem</th></tr></thead><tbody>${grouped.map(g=>`<tr><td>${mEsc(g.nome)}</td><td class="num">${mMoney(g.sem_iva)}</td><td class="num">${mMoney(g.com_iva)}</td><td class="num">${mMoney(g.margem)}</td></tr>`).join('')}</tbody></table>
-    <div class="credit">Desenvolvido By Domingos &amp; Morgado</div><script>window.onload=()=>setTimeout(()=>window.print(),600)<\/script></body></html>`);win.document.close();
+    <div class="credit">Desenvolvido By Domingos &amp; Morgado</div><script>window.onload=()=>setTimeout(()=>window.print(),600)<\/script>
+
+</body></html>`);win.document.close();
   }
   function bind(){
     ['mgArea','mgGroup','mgFamily','mgSubfamily','mgArticle','mgClient','mgSupplier'].forEach(id=>m$(id)?.addEventListener('change',render));
@@ -2173,5 +2191,266 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+<style id="dmReportsStyles">
+#tab-relatorios .report-toolbar{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;align-items:end;margin-bottom:20px}
+#tab-relatorios .report-actions{grid-column:span 2}
+#tab-relatorios .report-search-input{font-size:14px;padding:11px 12px}
+#tab-relatorios .report-toolbar .filter{box-shadow:none;border-radius:14px;padding:13px}
+#tab-relatorios .report-actions{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+#tab-relatorios .report-preview{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:30px;min-height:820px;font-size:15px}
+#tab-relatorios .rp-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:3px solid var(--accent);padding-bottom:16px;margin-bottom:18px}
+#tab-relatorios .rp-title{font-size:30px;font-weight:950;letter-spacing:-.04em}
+#tab-relatorios .rp-sub{font-size:14px;color:var(--muted);margin-top:7px;line-height:1.5}
+#tab-relatorios .rp-logo{width:145px;max-height:62px;object-fit:contain}
+#tab-relatorios .rp-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
+#tab-relatorios .rp-kpi{border:1px solid var(--line);border-radius:14px;padding:14px;background:#f8fbff}
+#tab-relatorios .rp-kpi span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:900}
+#tab-relatorios .rp-kpi b{display:block;font-size:23px;margin-top:6px}
+#tab-relatorios .rp-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,.8fr);gap:18px}
+#tab-relatorios .rp-chart{height:430px;border:1px solid var(--line);border-radius:15px;padding:10px;overflow:hidden;background:#fff}
+#tab-relatorios .rp-chart svg{width:100%;height:100%}
+#tab-relatorios .rp-box{border:1px solid var(--line);border-radius:15px;padding:14px;overflow:hidden;background:#fff}
+#tab-relatorios .rp-box h3,#tab-relatorios h3{font-size:18px;margin:0 0 10px}
+#tab-relatorios .rp-tables{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+#tab-relatorios .rp-table table{font-size:13px;table-layout:fixed}
+#tab-relatorios .rp-table th,#tab-relatorios .rp-table td{padding:7px 7px;line-height:1.25}
+#tab-relatorios .rp-table th:first-child,#tab-relatorios .rp-table td:first-child{width:62%}
+#tab-relatorios .rp-foot{text-align:right;font-size:12px;color:var(--muted);font-weight:800;margin-top:14px}
+#tab-relatorios .report-help{font-size:13px;color:var(--muted);margin:-6px 0 16px}
+@media(max-width:1100px){#tab-relatorios .report-toolbar{grid-template-columns:1fr 1fr}#tab-relatorios .rp-kpis{grid-template-columns:repeat(2,1fr)}#tab-relatorios .rp-grid,#tab-relatorios .rp-tables{grid-template-columns:1fr}#tab-relatorios .rp-chart{height:360px}}
+@media(max-width:650px){#tab-relatorios .report-toolbar{grid-template-columns:1fr}#tab-relatorios .rp-kpis{grid-template-columns:1fr 1fr}#tab-relatorios .report-preview{padding:16px;font-size:14px}#tab-relatorios .rp-logo{display:none}#tab-relatorios .rp-title{font-size:24px}}
+</style>
+<script id="dmReportsScript">
+(function(){
+'use strict';
+const R=id=>document.getElementById(id);
+const rEsc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const rAttr=s=>rEsc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const rMoney=v=>new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(v)||0);
+const rNum=v=>new Intl.NumberFormat('pt-PT',{maximumFractionDigits:0}).format(Number(v)||0);
+function rGroup(rows,key){
+ const m=new Map();
+ (rows||[]).forEach(x=>{const k=String(x[key]||'N/D');if(!m.has(k))m.set(k,{name:k,value:0,qty:0,clients:new Set()});const o=m.get(k);o.value+=Number(x.valor_liquido)||0;o.qty+=Number(x.quantidade)||0;o.clients.add(x.cliente||'N/D')});
+ return [...m.values()].sort((a,b)=>b.value-a.value);
+}
+function ensureReports(){
+ const tabs=document.querySelector('.tabs');
+ if(tabs&&!document.querySelector('[data-tab="tab-relatorios"]')){
+  const b=document.createElement('button');b.className='tab-btn';b.type='button';b.dataset.tab='tab-relatorios';b.textContent='Relatórios';
+  b.addEventListener('click',()=>{document.querySelectorAll('.tab-btn').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.toggle('active',x.id==='tab-relatorios'));setTimeout(renderReport,20)});tabs.appendChild(b);
+ }
+ if(!R('tab-relatorios')){
+  const sec=document.createElement('section');sec.id='tab-relatorios';sec.className='tab-panel';sec.innerHTML=`<div class="panel wide"><h2>Relatórios de vendas</h2><div class="report-toolbar">
+   <div class="filter"><label>Modelo</label><select id="reportType"><option value="daily">Relatório semanal</option><option value="compare">Comparação anos / meses</option></select></div>
+   <div class="filter"><label>Semana principal</label><select id="reportWeekPrimary"><option value="">Usar filtro geral / todas</option></select></div>
+   <div class="filter"><label>Comparar com semana</label><select id="reportWeekCompare"><option value="">Sem comparação</option></select></div>
+   <div class="filter"><label>Nome da pesquisa / relatório</label><input id="reportName" placeholder="Ex.: DM / 34-N002 / 2025-2026"></div>
+   <div class="filter"><label>Pesquisar cliente no relatório</label><input class="report-search-input" type="search" id="reportClientSearch" list="reportClientList" placeholder="Nome ou parte do nome"><datalist id="reportClientList"></datalist></div>
+   <div class="filter"><label>Pesquisar vendedor no relatório</label><input class="report-search-input" type="search" id="reportSellerSearch" list="reportSellerList" placeholder="Nome ou parte do nome"><datalist id="reportSellerList"></datalist></div>
+   <div class="filter"><label>Dimensão comparativa</label><select id="reportDimension"><option value="area">Área de negócio</option><option value="cliente">Cliente</option><option value="vendedor">Vendedor</option><option value="artigo_desc">Artigo</option></select></div>
+   <div class="filter"><label>Linhas por tabela</label><select id="reportLimit"><option>5</option><option selected>6</option><option>8</option><option>10</option></select></div>
+   <div class="report-actions"><button type="button" class="secondary" id="reportClearSearch">Limpar pesquisa</button><button type="button" class="secondary" id="reportRefresh">Atualizar</button><button type="button" class="accent" id="reportPdf">Exportar PDF</button></div>
+  </div><div class="report-help">Selecione uma semana principal e, opcionalmente, uma segunda semana para comparação. O texto da coluna SEMANA é apresentado exatamente como está no Excel. Cliente e Vendedor combinam-se com todos os filtros gerais ativos.</div><div id="reportPreview" class="report-preview"></div></div>`;
+  R('dashboard').appendChild(sec);
+  ['reportType','reportDimension','reportLimit','reportWeekPrimary','reportWeekCompare'].forEach(id=>R(id).addEventListener('change',renderReport));['reportName','reportClientSearch','reportSellerSearch'].forEach(id=>R(id).addEventListener('input',renderReport));R('reportClearSearch').addEventListener('click',()=>{R('reportClientSearch').value='';R('reportSellerSearch').value='';renderReport()});R('reportRefresh').addEventListener('click',renderReport);R('reportPdf').addEventListener('click',exportReportPdf);populateReportSearchLists();
+ }
+}
+function populateReportSearchLists(){
+ const base=typeof filtered==='function'?filtered():(window.DATA||[]);
+ const fill=(id,key)=>{const el=R(id);if(!el)return;const vals=[...new Set(base.map(x=>String(x[key]||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt',{sensitivity:'base',numeric:true}));el.innerHTML=vals.map(v=>`<option value="${rAttr(v)}"></option>`).join('')};
+ fill('reportClientList','cliente');fill('reportSellerList','vendedor');populateReportWeeks();
+}
+function populateReportWeeks(){
+ const weeks=[...new Set((typeof DATA!=='undefined'?DATA:[]).map(x=>cleanFilterLabel(x.semana)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true,sensitivity:'base'}));
+ const primary=R('reportWeekPrimary'),compare=R('reportWeekCompare');if(!primary||!compare)return;
+ const oldP=primary.value,oldC=compare.value;
+ primary.innerHTML='<option value="">Usar filtro geral / todas</option>'+weeks.map(w=>`<option value="${rAttr(w)}">${rEsc(w)}</option>`).join('');
+ compare.innerHTML='<option value="">Sem comparação</option>'+weeks.map(w=>`<option value="${rAttr(w)}">${rEsc(w)}</option>`).join('');
+ if(weeks.includes(oldP))primary.value=oldP;if(weeks.includes(oldC))compare.value=oldC;
+}
+function reportBaseRows(){
+ const weekEl=R('semana'),old=weekEl?weekEl.value:'';if(weekEl)weekEl.value='';
+ let rows=typeof filtered==='function'?filtered():(typeof DATA!=='undefined'?DATA:[]);
+ if(weekEl)weekEl.value=old;return rows;
+}
+function currentRows(){
+ let rows=reportBaseRows();
+ const selectedWeek=cleanFilterLabel(R('reportWeekPrimary')?.value||R('semana')?.value||'');
+ if(selectedWeek)rows=rows.filter(x=>cleanFilterLabel(x.semana)===selectedWeek);
+ const cq=norm(R('reportClientSearch')?.value||''),sq=norm(R('reportSellerSearch')?.value||'');
+ if(cq)rows=rows.filter(x=>norm(x.cliente||'').includes(cq));
+ if(sq)rows=rows.filter(x=>norm(x.vendedor||'').includes(sq));
+ return rows;
+}
+function filterDescription(){
+ const parts=[];[['ano','Ano'],['mes','Mês'],['semana','Semana'],['vendedor','Vendedor'],['cliente','Cliente'],['area','Área'],['grupo','Grupo'],['distrito','Distrito']].forEach(([id,label])=>{const e=R(id);if(e&&e.value){parts.push(label+': '+(e.options?e.options[e.selectedIndex]?.text:e.value))}});
+ const rp=R('reportWeekPrimary')?.value;if(rp)parts.push('Semana do relatório: '+rp);const rcw=R('reportWeekCompare')?.value;if(rcw)parts.push('Comparação: '+rcw);const art=R('artigoPesquisa')?.value?.trim();if(art)parts.push('Pesquisa artigo: '+art);const rc=R('reportClientSearch')?.value?.trim();if(rc)parts.push('Cliente no relatório: '+rc);const rs=R('reportSellerSearch')?.value?.trim();if(rs)parts.push('Vendedor no relatório: '+rs);return parts.length?parts.join(' · '):'Sem filtros ativos — total da base de dados';
+}
+function reportTitle(type){return R('reportName')?.value.trim()||(type==='daily'?'Relatório semanal de vendas':'Comparação de vendas por anos e meses')}
+function kpis(rows){return {net:rows.reduce((a,x)=>a+(Number(x.valor_liquido)||0),0),qty:rows.reduce((a,x)=>a+(Number(x.quantidade)||0),0),clients:new Set(rows.map(x=>x.cliente)).size,articles:new Set(rows.map(x=>x.artigo)).size,sellers:new Set(rows.map(x=>x.vendedor)).size}}
+function tableHtml(title,rows,limit,extra){
+ const shown=rows.slice(0,limit);return `<div class="rp-box rp-table"><h3>${rEsc(title)}</h3><table><thead><tr><th>Descrição</th><th class="num">Sem IVA</th>${extra?'<th class="num">'+rEsc(extra)+'</th>':''}</tr></thead><tbody>${shown.length?shown.map(x=>`<tr><td title="${rAttr(x.name)}">${rEsc(x.name.length>48?x.name.slice(0,47)+'…':x.name)}</td><td class="num">${rMoney(x.value)}</td>${extra?`<td class="num">${extra==='Clientes'?rNum(x.clients.size):rNum(x.qty)}</td>`:''}</tr>`).join(''):'<tr><td colspan="3">Sem dados</td></tr>'}</tbody></table></div>`;
+}
+function monthlyData(rows){const years=[...new Set(rows.map(x=>Number(x.ano)).filter(Boolean))].sort((a,b)=>a-b),out=[];years.forEach(y=>{for(let m=1;m<=12;m++){out.push({year:y,month:m,value:rows.filter(x=>Number(x.ano)===y&&Number(x.mes)===m).reduce((a,x)=>a+(Number(x.valor_liquido)||0),0)})}});return {years,out}}
+function lineChart(rows){
+ const {years,out}=monthlyData(rows);if(!years.length)return '<div class="empty">Sem dados mensais</div>';
+ const w=1100,h=420,l=110,r=30,t=45,b=62,max=Math.max(1,...out.map(x=>x.value)),pw=w-l-r,ph=h-t-b;let svg=`<svg viewBox="0 0 ${w} ${h}">`;
+ [0,.25,.5,.75,1].forEach(p=>{const y=h-b-ph*p;svg+=`<line x1="${l}" y1="${y}" x2="${w-r}" y2="${y}" stroke="#dbe3ef"/><text x="8" y="${y+5}" font-size="15" font-weight="700" fill="#64748b">${rMoney(max*p).replace(',00','')}</text>`});
+ years.forEach((yr,yi)=>{const pts=[];for(let m=1;m<=12;m++){const d=out.find(x=>x.year===yr&&x.month===m),x=l+(m-1)*(pw/11),y=h-b-ph*((d?.value||0)/max);pts.push(x+','+y)}const col=['#0657ff','#00a651','#ff9900','#7c3aed','#ef2f78'][yi%5];svg+=`<polyline fill="none" stroke="${col}" stroke-width="6" points="${pts.join(' ')}"/>`;pts.forEach((p,i)=>{const [x,y]=p.split(',');svg+=`<circle cx="${x}" cy="${y}" r="6" fill="${col}"><title>${yr} ${MONTHS[i+1]}: ${rMoney(out.find(d=>d.year===yr&&d.month===i+1)?.value||0)}</title></circle>`});svg+=`<rect x="${l+yi*145}" y="10" width="16" height="16" rx="3" fill="${col}"/><text x="${l+24+yi*145}" y="24" font-size="15" font-weight="800" fill="#334155">${yr}</text>`});
+ for(let m=1;m<=12;m++){const x=l+(m-1)*(pw/11);svg+=`<text x="${x}" y="${h-20}" text-anchor="middle" font-size="14" font-weight="700" fill="#64748b">${MONTHS[m]}</text>`}return svg+'</svg>';
+}
+function clientInfo(rows){const selected=R('reportClientSearch')?.value?.trim()||R('cliente')?.value,relevant=rows,districts=rGroup(relevant,'distrito').slice(0,6),areas=rGroup(relevant,'area').slice(0,6);return `<div class="rp-box"><h3>Informação de clientes</h3><table><tbody><tr><th>Cliente pesquisado</th><td>${rEsc(selected||'Todos os clientes')}</td></tr><tr><th>Clientes únicos</th><td class="num">${rNum(new Set(relevant.map(x=>x.cliente)).size)}</td></tr><tr><th>Distritos principais</th><td>${rEsc(districts.map(x=>x.name).join(', ')||'N/D')}</td></tr><tr><th>Áreas principais</th><td>${rEsc(areas.map(x=>x.name).join(', ')||'N/D')}</td></tr></tbody></table></div>`}
+function commonHead(type,rows){const k=kpis(rows),logo=document.querySelector('header .logo')?.src||'';return `<div class="rp-head"><div><div class="rp-title">${rEsc(reportTitle(type))}</div><div class="rp-sub">Emitido em ${new Date().toLocaleString('pt-PT')}<br>${rEsc(filterDescription())}</div></div>${logo?`<img class="rp-logo" src="${logo}">`:''}</div><div class="rp-kpis"><div class="rp-kpi"><span>Vendas sem IVA</span><b>${rMoney(k.net)}</b></div><div class="rp-kpi"><span>Quantidade</span><b>${rNum(k.qty)}</b></div><div class="rp-kpi"><span>Clientes</span><b>${rNum(k.clients)}</b></div><div class="rp-kpi"><span>Artigos</span><b>${rNum(k.articles)}</b></div><div class="rp-kpi"><span>Vendedores</span><b>${rNum(k.sellers)}</b></div></div>`}
+function weekRows(label){
+ if(!label)return[];let rows=reportBaseRows().filter(x=>cleanFilterLabel(x.semana)===cleanFilterLabel(label));
+ const cq=norm(R('reportClientSearch')?.value||''),sq=norm(R('reportSellerSearch')?.value||'');
+ if(cq)rows=rows.filter(x=>norm(x.cliente||'').includes(cq));if(sq)rows=rows.filter(x=>norm(x.vendedor||'').includes(sq));return rows;
+}
+function pctChange(current,previous){if(!previous)return current?100:0;return (current-previous)/Math.abs(previous)*100}
+function comparisonBox(rows){
+ const compareLabel=R('reportWeekCompare')?.value||'';if(!compareLabel)return clientInfo(rows);
+ const primaryLabel=R('reportWeekPrimary')?.value||R('semana')?.value||'Semana principal';
+ const other=weekRows(compareLabel),a=kpis(rows),b=kpis(other),delta=a.net-b.net,pct=pctChange(a.net,b.net);
+ return `<div class="rp-box"><h3>Comparação semanal</h3><table><tbody><tr><th>Semana principal</th><td>${rEsc(primaryLabel)}</td></tr><tr><th>Semana comparada</th><td>${rEsc(compareLabel)}</td></tr><tr><th>Vendas principal</th><td class="num">${rMoney(a.net)}</td></tr><tr><th>Vendas comparada</th><td class="num">${rMoney(b.net)}</td></tr><tr><th>Diferença</th><td class="num"><b>${delta>=0?'+':''}${rMoney(delta)} (${pct>=0?'+':''}${pct.toFixed(1).replace('.',',')}%)</b></td></tr><tr><th>Clientes</th><td class="num">${rNum(a.clients)} vs ${rNum(b.clients)}</td></tr><tr><th>Artigos</th><td class="num">${rNum(a.articles)} vs ${rNum(b.articles)}</td></tr><tr><th>Vendedores</th><td class="num">${rNum(a.sellers)} vs ${rNum(b.sellers)}</td></tr></tbody></table></div>`;
+}
+function weeklyComparisonChart(rows){
+ const compareLabel=R('reportWeekCompare')?.value||'';if(!compareLabel)return lineChart(rows);
+ const primaryLabel=R('reportWeekPrimary')?.value||R('semana')?.value||'Semana principal',other=weekRows(compareLabel);
+ const dim=R('reportDimension')?.value||'area',a=rGroup(rows,dim).slice(0,8),b=rGroup(other,dim),cats=[...new Set(a.map(x=>x.name).concat(b.slice(0,8).map(x=>x.name)))].slice(0,10);
+ const w=1100,h=420,l=230,r=40,t=45,bottom=55,max=Math.max(1,...cats.flatMap(c=>[(a.find(x=>x.name===c)?.value||0),(b.find(x=>x.name===c)?.value||0)])),ph=h-t-bottom,rowH=ph/Math.max(1,cats.length),pw=w-l-r;let svg=`<svg viewBox="0 0 ${w} ${h}">`;
+ cats.forEach((c,i)=>{const av=a.find(x=>x.name===c)?.value||0,bv=b.find(x=>x.name===c)?.value||0,y=t+i*rowH,bh=Math.max(7,rowH*.30);svg+=`<text x="${l-10}" y="${y+rowH*.55}" text-anchor="end" font-size="13" font-weight="700" fill="#334155">${rEsc(c.length>28?c.slice(0,27)+'…':c)}</text><rect x="${l}" y="${y+3}" width="${pw*av/max}" height="${bh}" rx="5" fill="#0657ff"><title>${rEsc(primaryLabel)}: ${rMoney(av)}</title></rect><rect x="${l}" y="${y+bh+8}" width="${pw*bv/max}" height="${bh}" rx="5" fill="#00a651"><title>${rEsc(compareLabel)}: ${rMoney(bv)}</title></rect>`});
+ svg+=`<rect x="${l}" y="12" width="15" height="15" rx="3" fill="#0657ff"/><text x="${l+22}" y="25" font-size="14" font-weight="800">${rEsc(primaryLabel)}</text><rect x="${l+330}" y="12" width="15" height="15" rx="3" fill="#00a651"/><text x="${l+352}" y="25" font-size="14" font-weight="800">${rEsc(compareLabel)}</text></svg>`;return svg;
+}
+function dailyHtml(rows){const limit=Number(R('reportLimit')?.value)||6,hasCompare=!!R('reportWeekCompare')?.value;return `${commonHead('daily',rows)}<div class="rp-grid"><div><h3>${hasCompare?'Comparação semanal por dimensão':'Evolução mensal — vendas sem IVA'}</h3><div class="rp-chart">${weeklyComparisonChart(rows)}</div></div>${comparisonBox(rows)}</div><div class="rp-tables">${tableHtml('Vendas por área de negócio',rGroup(rows,'area'),limit,'Clientes')}${tableHtml('Vendas por cliente',rGroup(rows,'cliente'),limit,'')}${tableHtml('Vendas por artigo',rGroup(rows,'artigo_desc'),limit,'Qtd.')}${tableHtml('Vendas por vendedor',rGroup(rows,'vendedor'),limit,'Clientes')}</div><div class="rp-foot">Valores sem IVA · Desenvolvido By Domingos &amp; Morgado</div>`}
+function compareHtml(rows){const dim=R('reportDimension')?.value||'area',labels={area:'Área de negócio',cliente:'Cliente',vendedor:'Vendedor',artigo_desc:'Artigo'},limit=Number(R('reportLimit')?.value)||6;return `${commonHead('compare',rows)}<div class="rp-grid"><div><h3>Comparação mensal entre anos</h3><div class="rp-chart">${lineChart(rows)}</div></div>${clientInfo(rows)}</div><div class="rp-tables">${tableHtml('Ranking — '+labels[dim],rGroup(rows,dim),limit,'Qtd.')}${tableHtml('Áreas de negócio',rGroup(rows,'area'),limit,'Clientes')}${tableHtml('Clientes',rGroup(rows,'cliente'),limit,'')}${tableHtml('Vendedores',rGroup(rows,'vendedor'),limit,'Clientes')}</div><div class="rp-foot">Comparação por ano/mês · Valores sem IVA · Desenvolvido By Domingos &amp; Morgado</div>`}
+function renderReport(){ensureReports();const root=R('reportPreview');if(!root)return;const rows=currentRows(),type=R('reportType')?.value||'daily';root.innerHTML=rows.length?(type==='daily'?dailyHtml(rows):compareHtml(rows)):'<div class="empty">Sem dados para os filtros selecionados.</div>'}
+function exportReportPdf(){
+ renderReport();const preview=R('reportPreview');if(!preview)return;const type=R('reportType')?.value||'daily',win=window.open('','_blank');if(!win){alert('Permita janelas pop-up para exportar o PDF.');return}
+ const css=`*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#0b1533;font-size:9px}.page{padding:6mm 7mm}.rp-head{display:flex;justify-content:space-between;border-bottom:2px solid #0657ff;padding-bottom:5px;margin-bottom:6px}.rp-title{font-size:18px;font-weight:900}.rp-sub{font-size:8px;color:#64748b;line-height:1.35}.rp-logo{width:95px;max-height:38px;object-fit:contain}.rp-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:6px}.rp-kpi{border:1px solid #dbe3ef;border-radius:5px;padding:5px;background:#f8fbff}.rp-kpi span{display:block;font-size:7px;text-transform:uppercase;color:#64748b;font-weight:bold}.rp-kpi b{font-size:12px}.rp-grid{display:grid;grid-template-columns:1.55fr .85fr;gap:6px}.rp-chart{height:205px;border:1px solid #dbe3ef;border-radius:5px;padding:3px}.rp-chart svg{width:100%;height:100%}.rp-box{border:1px solid #dbe3ef;border-radius:5px;padding:5px;overflow:hidden}.rp-box h3,h3{font-size:10px;margin:0 0 4px}.rp-tables{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{padding:2.6px 3px;border-bottom:1px solid #e2e8f0;font-size:7.4px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}th{font-size:6.6px;text-transform:uppercase;color:#64748b;text-align:left}.num{text-align:right}.rp-foot{text-align:right;font-size:6.5px;color:#64748b;font-weight:bold;margin-top:4px}@page{size:A4 landscape;margin:0}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`;
+ win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${rEsc(reportTitle(type))}</title><style>${css}</style></head><body><div class="page">${preview.innerHTML}</div><script>window.onload=()=>setTimeout(()=>window.print(),650)<\/script>
+
+</body></html>`);win.document.close();
+}
+const oldUpdate=window.update;if(typeof oldUpdate==='function')window.update=function(){const out=oldUpdate.apply(this,arguments);setTimeout(()=>{if(R('tab-relatorios')){populateReportSearchLists();renderReport()}},30);return out};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureReports();setTimeout(renderReport,250)});else{ensureReports();setTimeout(renderReport,250)}
+})();
+</script>
+
+
+<style id="dmCollapsedFiltersWeeklyStyles">
+  .dm-entry-tools{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin:-4px 0 12px;flex-wrap:wrap}
+  .dm-entry-tools button{display:inline-flex;align-items:center;gap:8px}
+  .dm-collapsible{overflow:hidden;max-height:0;opacity:0;pointer-events:none;margin:0!important;transition:max-height .28s ease,opacity .2s ease,margin .28s ease}
+  .dm-collapsible.open{max-height:720px;opacity:1;pointer-events:auto;margin-bottom:18px!important}
+  .article-search{margin-top:0}
+  .article-search .filter{position:relative}
+  .article-search label{font-size:13px}
+  #artigoPesquisa{padding-right:150px}
+  .dm-search-note{position:absolute;right:28px;bottom:28px;color:var(--muted);font-size:12px;font-weight:800;pointer-events:none}
+  .dm-weekly-status{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#f8fbff;font-size:12px;color:#475569;margin:10px 0 0;line-height:1.45}
+  @media(max-width:760px){#artigoPesquisa{padding-right:14px}.dm-search-note{position:static;display:block;margin-top:7px}.dm-entry-tools{justify-content:stretch}.dm-entry-tools button{flex:1;justify-content:center}}
+</style>
+<script id="dmCollapsedFiltersWeeklyScript">
+(function(){
+ const byId=id=>document.getElementById(id);
+ function setupCollapsedEntry(){
+   const upload=document.querySelector('section.upload');
+   const filters=document.querySelector('section.filters');
+   const actions=document.querySelector('.actions');
+   const search=document.querySelector('section.article-search');
+   if(!search || byId('dmToggleFilters')) return;
+   [upload,filters,actions].forEach(el=>{if(el)el.classList.add('dm-collapsible')});
+   const tools=document.createElement('div');tools.className='dm-entry-tools';
+   tools.innerHTML='<button type="button" class="secondary" id="dmToggleFilters" aria-expanded="false">☰ Abrir filtros e ficheiro</button>';
+   search.insertAdjacentElement('afterend',tools);
+   const input=byId('artigoPesquisa');
+   const label=search.querySelector('label');
+   if(label)label.textContent='Pesquisa geral — artigo / descrição / cliente';
+   if(input)input.placeholder='Escreva artigo, descrição ou nome do cliente…';
+   const note=document.createElement('span');note.className='dm-search-note';note.textContent='Atualiza todo o dashboard';
+   search.querySelector('.filter')?.appendChild(note);
+   const btn=byId('dmToggleFilters');
+   btn.addEventListener('click',()=>{
+     const open=btn.getAttribute('aria-expanded')!=='true';
+     btn.setAttribute('aria-expanded',String(open));
+     [upload,filters,actions].forEach(el=>el&&el.classList.toggle('open',open));
+     btn.textContent=open?'✕ Fechar filtros e ficheiro':'☰ Abrir filtros e ficheiro';
+   });
+ }
+ // Extend the existing global filter so the main search also matches clients.
+ function patchGlobalSearch(){
+   if(window.__dmGeneralSearchPatched || typeof window.filtered!=='function')return;
+   const original=window.filtered;
+   window.filtered=function(){
+     const q=(typeof norm==='function'?norm((byId('artigoPesquisa')?.value)||''):String(byId('artigoPesquisa')?.value||'').toUpperCase().trim());
+     if(!q)return original();
+     const old=byId('artigoPesquisa').value;
+     byId('artigoPesquisa').value='';
+     let base;
+     try{base=original()}finally{byId('artigoPesquisa').value=old}
+     return base.filter(r=>{
+       const hay=(typeof norm==='function'?norm(`${r.artigo||''} ${r.descricao||''} ${r.artigo_desc||''} ${r.cliente||''}`):`${r.artigo||''} ${r.descricao||''} ${r.artigo_desc||''} ${r.cliente||''}`.toUpperCase());
+       return hay.includes(q);
+     });
+   };
+   window.__dmGeneralSearchPatched=true;
+ }
+ const HISTORY_KEY='dmExcelWeeklyHistoryV1';
+ function datasetSignature(){
+   const rows=(typeof DATA!=='undefined'?DATA:[]);
+   let net=0,qty=0,iva=0;
+   for(const r of rows){net+=Number(r.valor_liquido)||0;qty+=Number(r.quantidade)||0;iva+=Number(r.iva)||0}
+   return [rows.length,net.toFixed(2),qty.toFixed(2),iva.toFixed(2),new Set(rows.map(r=>r.cliente)).size,new Set(rows.map(r=>r.artigo)).size].join('|');
+ }
+ function loadHistory(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}catch(_){return []}}
+ function saveHistory(h){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(h))}catch(_){}}
+ function captureSnapshot(){
+   const rows=(typeof DATA!=='undefined'?DATA:[]);if(!rows.length)return;
+   const now=Date.now(),cut=now-7*24*60*60*1000,sig=datasetSignature();
+   let h=loadHistory().filter(x=>Number(x.ts)>=cut);
+   if(!h.length || h[h.length-1].sig!==sig){
+     h.push({ts:now,sig,file:(typeof currentFile!=='undefined'&&currentFile&&currentFile.name)||((typeof activeDefaultExcelFile!=='undefined'&&activeDefaultExcelFile)||''),rows:rows.length,net:rows.reduce((a,r)=>a+(Number(r.valor_liquido)||0),0),qty:rows.reduce((a,r)=>a+(Number(r.quantidade)||0),0),clients:new Set(rows.map(r=>r.cliente)).size,articles:new Set(rows.map(r=>r.artigo)).size,sellers:new Set(rows.map(r=>r.vendedor)).size});
+   }
+   saveHistory(h.slice(-80));
+   renderWeeklyStatus();
+ }
+ function weeklySummary(){
+   const now=Date.now(),h=loadHistory().filter(x=>Number(x.ts)>=now-7*24*60*60*1000);
+   if(!h.length)return null;
+   const first=h[0],last=h[h.length-1];
+   return {count:h.length,first,last,deltaNet:last.net-first.net,deltaRows:last.rows-first.rows,from:new Date(first.ts),to:new Date(last.ts)};
+ }
+ function renderWeeklyStatus(){
+   const host=byId('tab-relatorios')?.querySelector('.report-help');if(!host)return;
+   let box=byId('dmWeeklyStatus');if(!box){box=document.createElement('div');box.id='dmWeeklyStatus';box.className='dm-weekly-status';host.insertAdjacentElement('afterend',box)}
+   const w=weeklySummary();
+   if(!w){const html='Histórico semanal: ainda não foi registada nenhuma versão do Excel neste navegador.';if(box.textContent!==html)box.textContent=html;return}
+   const money=typeof eur2!=='undefined'?eur2.format(w.deltaNet):w.deltaNet.toLocaleString('pt-PT',{style:'currency',currency:'EUR'});
+   const html='<b>Histórico semanal detetado neste navegador:</b> '+w.count+' versão(ões) diferentes entre '+w.from.toLocaleString('pt-PT')+' e '+w.to.toLocaleString('pt-PT')+'. Variação acumulada: <b>'+money+'</b> e <b>'+w.deltaRows+'</b> registos.';
+   if(box.innerHTML!==html)box.innerHTML=html;
+ }
+ window.dmWeeklySummary=weeklySummary;
+ // Inject weekly history into report header after it renders.
+ function patchReportRender(){
+   if(window.__dmWeeklyReportPatched || typeof window.renderReport!=='function')return;
+   const original=window.renderReport;
+   window.renderReport=function(){
+     const out=original.apply(this,arguments);
+     const preview=byId('reportPreview'),w=weeklySummary();
+     if(preview && w && byId('reportType')?.value==='daily'){
+       const head=preview.querySelector('.rp-head .rp-sub');
+       if(head){const money=typeof eur2!=='undefined'?eur2.format(w.deltaNet):w.deltaNet.toLocaleString('pt-PT',{style:'currency',currency:'EUR'});head.innerHTML+='<br><b>Semana acompanhada:</b> '+w.from.toLocaleDateString('pt-PT')+'–'+w.to.toLocaleDateString('pt-PT')+' · '+w.count+' versões · variação '+money+' ('+(w.deltaRows>=0?'+':'')+w.deltaRows+' registos)'}
+     }
+     renderWeeklyStatus();return out;
+   };
+   window.__dmWeeklyReportPatched=true;
+ }
+ function init(){setupCollapsedEntry();patchGlobalSearch();installReportObserver();}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,50));else setTimeout(init,50);
+ // Existing update is called after every Excel reload; capture only changed versions.
+ const wait=setInterval(()=>{patchGlobalSearch();installReportObserver();if((typeof DATA!=='undefined'?DATA:[]).length){clearInterval(wait)}},300);
+})();
+</script>
 </body>
 </html>
