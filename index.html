@@ -153,7 +153,7 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 8px;
 .book-detail{border-bottom:1px solid #e8e1d3;padding-bottom:11px}
 .book-detail span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:900;color:#64748b;margin-bottom:4px}
 .book-detail strong{display:block;font-size:15px;overflow-wrap:anywhere}
-.book-notes{margin-top:23px;padding:16px;border:1px dashed #cbd5e1;border-radius:14px;min-height:110px;color:#64748b;font-size:13px;line-height:1.6}
+.book-notes{margin-top:23px;padding:16px;border:1px dashed #cbd5e1;border-radius:14px;min-height:110px;color:#64748b;font-size:13px;line-height:1.6}.article-pdf-link{margin-top:12px;padding:10px 13px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:900}.article-pdf-status{display:inline-block;margin-top:8px}
 .book-number{position:absolute;bottom:18px;font-size:11px;color:#94a3b8}.left .book-number{left:38px}.right .book-number{right:38px}
 .catalog-empty{padding:70px 20px;text-align:center;color:var(--muted)}
 .catalog-help{margin-top:16px;border:1px solid var(--line);border-radius:14px;padding:14px;background:#f8fafc;font-size:12px;color:#475569;line-height:1.6}
@@ -170,6 +170,27 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 8px;
 .catalog-music-controls input[type="file"]{display:none}
 .catalog-music-status{font-size:11px;opacity:.85;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:760px){.catalog-preview-head{align-items:flex-start;flex-direction:column}.catalog-music-controls{width:100%}.catalog-music-controls input[type="range"]{flex:1;min-width:85px}}
+</style>
+
+<style id="dmCatalogManagerStyles">
+.catalog-item{position:relative;padding-right:10px}
+.catalog-item-main{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
+.catalog-item-text{min-width:0}
+.catalog-item-status{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.catalog-status-chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 7px;font-size:9px;font-weight:900;line-height:1;border:1px solid #dbe3ef;background:#eef2f7;color:#475569}
+.catalog-status-chip.ok{background:#dcfce7;border-color:#bbf7d0;color:#166534}
+.catalog-status-chip.no{background:#fee2e2;border-color:#fecaca;color:#991b1b}
+.catalog-status-chip.wait{background:#f1f5f9;color:#64748b}
+.catalog-item-actions{display:flex;gap:6px;margin-top:7px;align-items:center;flex-wrap:wrap}
+.catalog-mini-action{padding:5px 7px;border-radius:7px;font-size:10px;font-weight:900;background:#e5e7eb;color:#111827;border:0}
+.catalog-mini-action.pdf{background:#eaf1ff;color:#0348d5}
+.catalog-mini-action.include.included{background:#dcfce7;color:#166534}
+.catalog-mini-action.include.excluded{background:#fee2e2;color:#991b1b}
+.catalog-results-note{font-size:11px;color:#64748b;margin:-5px 0 10px;line-height:1.35}
+</style>
+
+<style id="catalogMediaFixStyles">
+#catalogList [hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -277,7 +298,7 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 8px;
     <aside class="catalog-sidebar">
       <h2>Catálogo de artigos</h2>
       <div id="catalogCount" class="catalog-count">A preparar artigos…</div>
-      <input id="catalogSearch" class="catalog-search" type="search" placeholder="Pesquisar código ou descrição…" autocomplete="off">
+      <input id="catalogSearch" class="catalog-search" type="search" placeholder="Pesquisa livre: código, descrição, fornecedor, área, grupo ou família…" autocomplete="off">
       <div id="catalogList" class="catalog-list"></div>
     </aside>
     <div>
@@ -295,8 +316,7 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 8px;
         <div id="catalogBook" class="flipbook"></div>
       </section>
       <div class="catalog-help">
-        <b>Como adicionar uma fotografia:</b> abra a pasta <code>images/artigos</code> e coloque a imagem com o nome indicado na ficha.
-        São aceites <code>.jpg</code>, <code>.jpeg</code>, <code>.png</code> e <code>.webp</code>.
+        <b>Ficheiros dos artigos:</b> coloque as fotografias na pasta <code>images/artigos</code> e os PDFs na pasta <code>documents/artigos</code>, sempre com o código do artigo como nome. Fotografias: <code>.jpg</code>, <code>.jpeg</code>, <code>.png</code> ou <code>.webp</code>. Documentos: <code>.pdf</code>.
       </div>
     </div>
   </div>
@@ -2768,6 +2788,11 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
     const base='images/artigos/'+safeFileName(code);
     return [base+'.jpg',base+'.jpeg',base+'.png',base+'.webp'];
   };
+  const pdfCandidates=code=>{
+    const raw=safeText(code).trim();
+    const safe=safeFileName(code);
+    return [...new Set(['documents/artigos/'+raw+'.pdf','documents/artigos/'+raw+'.PDF','documents/artigos/'+safe+'.pdf','documents/artigos/'+safe+'.PDF'])];
+  };
 
   function uniqueFromDashboard(){
     if(!Array.isArray(window.DATA) || !window.DATA.length) return null;
@@ -2804,17 +2829,81 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
     renderBook();
   }
 
+  const CATALOG_CFG_KEY='dmFlipbookArticleConfigV2';
+  // Registo de PDFs publicados. Em GitHub Pages, tentar descobrir ficheiros
+  // apenas com fetch pode produzir falsos negativos. Adicione aqui novos
+  // códigos quando colocar PDFs em documents/artigos.
+  const KNOWN_PDF_CODES=new Set(['22-149972']);
+  const mediaProbeCache=new Map();
+  function getCatalogCfg(){try{return JSON.parse(localStorage.getItem(CATALOG_CFG_KEY)||'{}')}catch(_){return {}}}
+  function articleIncluded(code){const c=getCatalogCfg()[normalize(code)]||{};return c.included!==false}
+  function toggleArticleIncluded(code){const all=getCatalogCfg(),k=normalize(code),now=articleIncluded(code);all[k]={...(all[k]||{}),included:!now};localStorage.setItem(CATALOG_CFG_KEY,JSON.stringify(all));renderList();if(typeof window.dmRenderCatalogConfig==='function')window.dmRenderCatalogConfig()}
+  async function urlExists(url){
+    if(mediaProbeCache.has(url)) return mediaProbeCache.get(url);
+    const target=encodeURI(url);
+    const promise=(async()=>{
+      try{
+        // No GitHub Pages, HEAD e pedidos Range podem devolver falsos negativos.
+        // Um GET normal é a forma mais fiável de confirmar que o PDF publicado existe.
+        const r=await fetch(target,{method:'GET',cache:'reload',redirect:'follow'});
+        if(!r.ok) return false;
+        const type=(r.headers.get('content-type')||'').toLowerCase();
+        return !type || type.includes('pdf') || type.includes('octet-stream');
+      }catch(_){return false}
+    })();
+    mediaProbeCache.set(url,promise);return promise;
+  }
+  function imageExists(url){
+    const key='img:'+url;
+    if(mediaProbeCache.has(key)) return mediaProbeCache.get(key);
+    const promise=new Promise(resolve=>{
+      const img=new Image();
+      img.onload=()=>resolve(true);
+      img.onerror=()=>resolve(false);
+      img.src=encodeURI(url)+(url.includes('?')?'&':'?')+'dm_probe='+Date.now();
+    });
+    mediaProbeCache.set(key,promise);return promise;
+  }
+  async function firstExisting(urls,kind='file',code=''){
+    // Para PDFs conhecidos, use diretamente o caminho publicado. Isto evita
+    // falsos negativos do GitHub Pages e mantém o botão funcional.
+    if(kind==='pdf' && KNOWN_PDF_CODES.has(normalize(code))){
+      return 'documents/artigos/'+safeFileName(code)+'.pdf';
+    }
+    for(const u of urls){
+      const ok=kind==='image'?await imageExists(u):await urlExists(u);
+      if(ok)return u;
+    }
+    return '';
+  }
+  function updateMediaStatuses(){
+    byId('catalogList')?.querySelectorAll('.catalog-item[data-code]').forEach(async item=>{
+      const code=item.dataset.code;
+      const photo=await firstExisting(imageCandidates(code),'image');
+      const photoChip=item.querySelector('[data-media="photo"]');
+      if(photoChip){photoChip.className='catalog-status-chip '+(photo?'ok':'no');photoChip.textContent=photo?'📷 Foto':'📷 Sem foto'}
+      const pdf=await firstExisting(pdfCandidates(code),'pdf',code);
+      const pdfChip=item.querySelector('[data-media="pdf"]');
+      const pdfBtn=item.querySelector('[data-open-pdf]');
+      if(pdfChip){pdfChip.className='catalog-status-chip '+(pdf?'ok':'no');pdfChip.textContent=pdf?'📄 PDF':'📄 Sem PDF'}
+      if(pdfBtn){if(pdf){pdfBtn.hidden=false;pdfBtn.style.display='inline-flex';pdfBtn.dataset.pdfUrl=pdf}else{pdfBtn.hidden=true;pdfBtn.style.display='none';pdfBtn.removeAttribute('data-pdf-url')}}
+    });
+  }
   function renderList(){
     const list=byId('catalogList'), count=byId('catalogCount');
     if(!list||!count) return;
-    count.textContent=catalogFiltered.length+' artigo'+(catalogFiltered.length===1?'':'s')+' único'+(catalogFiltered.length===1?'':'s');
+    count.textContent=catalogFiltered.length+' artigo'+(catalogFiltered.length===1?'':'s')+' encontrado'+(catalogFiltered.length===1?'':'s');
     if(!catalogFiltered.length){list.innerHTML='<div class="catalog-empty">Nenhum artigo encontrado.</div>';return;}
-    list.innerHTML=catalogFiltered.map((a,i)=>`<button type="button" class="catalog-item ${i===catalogIndex?'active':''}" data-catalog-index="${i}">
-      <b>${escapeHtml(a.codigo)}</b><span>${escapeHtml(a.descricao||'Sem descrição')}</span>
-    </button>`).join('');
-    list.querySelectorAll('[data-catalog-index]').forEach(btn=>btn.addEventListener('click',()=>{
+    list.innerHTML=catalogFiltered.map((a,i)=>{const included=articleIncluded(a.codigo);return `<button type="button" class="catalog-item ${i===catalogIndex?'active':''}" data-catalog-index="${i}" data-code="${escapeHtml(a.codigo)}">
+      <div class="catalog-item-main"><div class="catalog-item-text"><b>${escapeHtml(a.codigo)}</b><span>${escapeHtml(a.descricao||'Sem descrição')}</span></div><div class="catalog-item-status"><i class="catalog-status-chip wait" data-media="photo">📷 …</i><i class="catalog-status-chip wait" data-media="pdf">📄 …</i></div></div>
+      <div class="catalog-item-actions"><span class="catalog-mini-action include ${included?'included':'excluded'}" data-toggle-include>${included?'✓ No flipbook':'✕ Fora do flipbook'}</span><span class="catalog-mini-action pdf" data-open-pdf hidden>Abrir PDF</span></div>
+    </button>`}).join('');
+    list.querySelectorAll('[data-catalog-index]').forEach(btn=>btn.addEventListener('click',e=>{
+      if(e.target.closest('[data-toggle-include]')){e.preventDefault();e.stopPropagation();toggleArticleIncluded(btn.dataset.code);return}
+      if(e.target.closest('[data-open-pdf]')){e.preventDefault();e.stopPropagation();const u=e.target.closest('[data-open-pdf]').dataset.pdfUrl;if(u)window.open(encodeURI(u),'_blank','noopener');return}
       catalogIndex=Number(btn.dataset.catalogIndex)||0; renderList(); renderBook();
     }));
+    updateMediaStatuses();
     const active=list.querySelector('.catalog-item.active'); if(active) active.scrollIntoView({block:'nearest'});
   }
 
@@ -2831,7 +2920,7 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
       if(indicator) indicator.textContent='0 / 0';
       if(prev) prev.disabled=true;if(next) next.disabled=true;return;
     }
-    const a=catalogFiltered[catalogIndex], candidates=imageCandidates(a.codigo);
+    const a=catalogFiltered[catalogIndex], candidates=imageCandidates(a.codigo), pdfs=pdfCandidates(a.codigo);
     if(indicator) indicator.textContent=(catalogIndex+1)+' / '+catalogFiltered.length;
     if(prev) prev.disabled=catalogIndex<=0;
     if(next) next.disabled=catalogIndex>=catalogFiltered.length-1;
@@ -2855,11 +2944,41 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
           ${detail('Família',a.familia)}
           ${detail('Subfamília',a.subfamilia)}
         </div>
-        <div class="book-notes"><b>Observações / documentação</b><br>Espaço preparado para acrescentar informações técnicas, ligações para manuais, PDFs ou notas internas.</div>
+        <div class="book-notes">
+          <b>Documentação do artigo</b><br>
+          <span class="article-pdf-status">A verificar PDF…</span>
+          <a class="article-pdf-link" data-pdf-candidates='${escapeHtml(JSON.stringify(pdfs))}' href="#" target="_blank" rel="noopener" style="display:none">📄 Abrir PDF do artigo</a>
+        </div>
         <div class="book-number">${catalogIndex*2+2}</div>
       </section>
     </article>`;
     loadCurrentImage();
+    loadCurrentPdf();
+  }
+
+  async function loadCurrentPdf(){
+    const link=byId('catalogBook')?.querySelector('.article-pdf-link[data-pdf-candidates]');
+    const status=byId('catalogBook')?.querySelector('.article-pdf-status');
+    if(!link) return;
+    let candidates=[];
+    try{candidates=JSON.parse(link.dataset.pdfCandidates||'[]');}catch(_){}
+    link.style.display='none';
+    link.removeAttribute('href');
+    if(status){status.style.display='inline';status.textContent='A verificar PDF…';}
+    if(!candidates.length){
+      if(status) status.textContent='Este artigo não tem documentação PDF associada.';
+      return;
+    }
+    const currentCode=catalogFiltered[catalogIndex]?.codigo||'';
+    const url=await firstExisting(candidates,'pdf',currentCode);
+    if(!url){
+      if(status) status.textContent='Este artigo não tem documentação PDF associada.';
+      return;
+    }
+    link.href=encodeURI(url);
+    link.style.display='inline-block';
+    link.textContent='📄 Abrir PDF do artigo';
+    if(status) status.style.display='none';
   }
 
   function loadCurrentImage(){
@@ -3011,7 +3130,8 @@ function canonicalArea(value){const x=norm(value);if(x.includes('EQUIP'))return 
 function articleConfig(a){const c=cfg()[norm(a.codigo)]||{};return {included:c.included!==false,section:canonicalArea(a.area)}}
 function setArticleConfig(code,patch){const all=cfg(),k=norm(code);all[k]={...(all[k]||{}),...patch};saveCfg(all)}
 function sectionOptions(a){const vals=new Set();if(a.area)vals.add(a.area);if(a.fornecedor)vals.add(a.fornecedor);if(a.area&&a.fornecedor)vals.add(a.area+' · '+a.fornecedor);if(a.familia)vals.add(a.familia);articles().forEach(x=>{if(x.area)vals.add(x.area);if(x.fornecedor)vals.add(x.fornecedor)});return [...vals].sort((x,y)=>x.localeCompare(y,'pt',{numeric:true,sensitivity:'base'}))}
-function renderConfig(){const box=$('catalogArticleConfig'),a=current();if(!box||!a)return;const c=articleConfig(a);box.innerHTML=`<div class="catalog-config-title">Artigo no flipbook · ${esc(c.section)}</div><div class="catalog-config-row"><button type="button" id="catalogIncludeToggle" class="catalog-include-btn ${c.included?'included':'excluded'}">${c.included?'✓ Incluído no flipbook':'✕ Não incluído no flipbook'}</button></div>`;$('catalogIncludeToggle').onclick=()=>{setArticleConfig(a.codigo,{included:!c.included});renderConfig()}}
+function renderConfig(){const box=$('catalogArticleConfig'),a=current();if(!box||!a)return;const c=articleConfig(a);box.innerHTML=`<div class="catalog-config-title">Artigo no flipbook</div><div class="catalog-config-row"><button type="button" id="catalogIncludeToggle" class="catalog-include-btn ${c.included?'included':'excluded'}">${c.included?'✓ Incluído no flipbook':'✕ Não incluído no flipbook'}</button></div>`;$('catalogIncludeToggle').onclick=()=>{setArticleConfig(a.codigo,{included:!c.included});renderConfig()}}
+window.dmRenderCatalogConfig=renderConfig;
 function refillSelect(id,label,field,filters){const el=$(id);if(!el)return;const keep=el.value||'';const vals=[...new Set(articles().filter(a=>Object.entries(filters).every(([k,v])=>!v||norm(a[k])===norm(v))).map(a=>String(a[field]||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true,sensitivity:'base'}));el.innerHTML=`<option value="">${label}: todos</option>`+vals.map(v=>`<option value="${esc(v)}" ${norm(v)===norm(keep)?'selected':''}>${esc(v)}</option>`).join('');if(keep&&!vals.some(v=>norm(v)===norm(keep)))el.value=''}
 function refreshCascade(changed){const f={fornecedor:$('catalogFornecedor')?.value||'',area:$('catalogArea')?.value||'',grupo:$('catalogGrupo')?.value||'',familia:$('catalogFamilia')?.value||''};refillSelect('catalogFornecedor','Fornecedor','fornecedor',{area:f.area,grupo:f.grupo,familia:f.familia});refillSelect('catalogArea','Área','area',{fornecedor:f.fornecedor,grupo:f.grupo,familia:f.familia});refillSelect('catalogGrupo','Grupo','grupo',{fornecedor:f.fornecedor,area:f.area,familia:f.familia});refillSelect('catalogFamilia','Família','familia',{fornecedor:f.fornecedor,area:f.area,grupo:f.grupo})}
 function applyMenus(){refreshCascade();window.dmCatalogFilters={fornecedor:$('catalogFornecedor')?.value||'',area:$('catalogArea')?.value||'',grupo:$('catalogGrupo')?.value||'',familia:$('catalogFamilia')?.value||''};window.dmCatalogState?.refresh();setTimeout(renderConfig,20)}
