@@ -2830,11 +2830,40 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
   }
 
   const CATALOG_CFG_KEY='dmFlipbookArticleConfigV2';
-  // Registo de PDFs publicados. Em GitHub Pages, tentar descobrir ficheiros
-  // apenas com fetch pode produzir falsos negativos. Adicione aqui novos
-  // códigos quando colocar PDFs em documents/artigos.
-  const KNOWN_PDF_CODES=new Set(['22-149972']);
+  const CATALOG_MANIFEST_URL='catalogo.json';
+  const catalogManifest=new Map();
   const mediaProbeCache=new Map();
+
+  async function loadCatalogManifest(){
+    catalogManifest.clear();
+    try{
+      const response=await fetch(CATALOG_MANIFEST_URL+'?v='+Date.now(),{cache:'no-store'});
+      if(!response.ok) return;
+      const payload=await response.json();
+      const items=Array.isArray(payload)?payload:(Array.isArray(payload.artigos)?payload.artigos:[]);
+      items.forEach(item=>{
+        if(!item||!item.codigo) return;
+        catalogManifest.set(normalize(item.codigo),item);
+      });
+    }catch(err){
+      console.warn('Não foi possível carregar catalogo.json',err);
+    }
+  }
+
+  function manifestMedia(code,kind){
+    const item=catalogManifest.get(normalize(code));
+    if(!item || !(kind in item)) return undefined;
+    const value=item[kind];
+    if(value===false || value===null || value==='') return '';
+    if(typeof value==='string') return value;
+    if(value===true){
+      return kind==='pdf'
+        ? 'documents/artigos/'+safeFileName(code)+'.pdf'
+        : 'images/artigos/'+safeFileName(code)+'.jpg';
+    }
+    return undefined;
+  }
+  window.dmCatalogManifestMedia=manifestMedia;
   function getCatalogCfg(){try{return JSON.parse(localStorage.getItem(CATALOG_CFG_KEY)||'{}')}catch(_){return {}}}
   function articleIncluded(code){const c=getCatalogCfg()[normalize(code)]||{};return c.included!==false}
   function toggleArticleIncluded(code){const all=getCatalogCfg(),k=normalize(code),now=articleIncluded(code);all[k]={...(all[k]||{}),included:!now};localStorage.setItem(CATALOG_CFG_KEY,JSON.stringify(all));renderList();if(typeof window.dmRenderCatalogConfig==='function')window.dmRenderCatalogConfig()}
@@ -2865,11 +2894,8 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
     mediaProbeCache.set(key,promise);return promise;
   }
   async function firstExisting(urls,kind='file',code=''){
-    // Para PDFs conhecidos, use diretamente o caminho publicado. Isto evita
-    // falsos negativos do GitHub Pages e mantém o botão funcional.
-    if(kind==='pdf' && KNOWN_PDF_CODES.has(normalize(code))){
-      return 'documents/artigos/'+safeFileName(code)+'.pdf';
-    }
+    const manifestValue=manifestMedia(code,kind==='image'?'foto':kind);
+    if(manifestValue!==undefined) return manifestValue;
     for(const u of urls){
       const ok=kind==='image'?await imageExists(u):await urlExists(u);
       if(ok)return u;
@@ -2879,7 +2905,7 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
   function updateMediaStatuses(){
     byId('catalogList')?.querySelectorAll('.catalog-item[data-code]').forEach(async item=>{
       const code=item.dataset.code;
-      const photo=await firstExisting(imageCandidates(code),'image');
+      const photo=await firstExisting(imageCandidates(code),'image',code);
       const photoChip=item.querySelector('[data-media="photo"]');
       if(photoChip){photoChip.className='catalog-status-chip '+(photo?'ok':'no');photoChip.textContent=photo?'📷 Foto':'📷 Sem foto'}
       const pdf=await firstExisting(pdfCandidates(code),'pdf',code);
@@ -2981,19 +3007,29 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
     if(status) status.style.display='none';
   }
 
-  function loadCurrentImage(){
+  async function loadCurrentImage(){
     const img=byId('catalogBook')?.querySelector('img[data-candidates]');
     if(!img) return;
     let candidates=[];
     try{candidates=JSON.parse(img.dataset.candidates||'[]');}catch(_){}
-    let i=0;
-    const attempt=()=>{
-      if(i>=candidates.length){img.style.display='none';return;}
-      img.src=candidates[i++];
+    const currentCode=catalogFiltered[catalogIndex]?.codigo||'';
+    const url=await firstExisting(candidates,'image',currentCode);
+    const placeholder=img.parentElement?.querySelector('.photo-placeholder');
+    if(!url){
+      img.removeAttribute('src');
+      img.style.display='none';
+      if(placeholder) placeholder.style.display='block';
+      return;
+    }
+    img.onload=()=>{
+      if(placeholder) placeholder.style.display='none';
+      img.style.display='block';
     };
-    img.onload=()=>{const ph=img.parentElement.querySelector('.photo-placeholder');if(ph)ph.style.display='none';img.style.display='block';};
-    img.onerror=attempt;
-    attempt();
+    img.onerror=()=>{
+      img.style.display='none';
+      if(placeholder) placeholder.style.display='block';
+    };
+    img.src=encodeURI(url);
   }
 
   function move(step){
@@ -3002,7 +3038,8 @@ document.addEventListener('click',ev=>{const el=ev.target.closest('[data-client-
     catalogIndex=nextIndex;renderList();renderBook();
   }
 
-  function initCatalog(){
+  async function initCatalog(){
+    await loadCatalogManifest();
     const search=byId('catalogSearch');
     if(search) search.addEventListener('input',()=>{catalogIndex=0;refreshSource();});
     byId('catalogPrev')?.addEventListener('click',()=>move(-1));
@@ -3136,8 +3173,8 @@ function refillSelect(id,label,field,filters){const el=$(id);if(!el)return;const
 function refreshCascade(changed){const f={fornecedor:$('catalogFornecedor')?.value||'',area:$('catalogArea')?.value||'',grupo:$('catalogGrupo')?.value||'',familia:$('catalogFamilia')?.value||''};refillSelect('catalogFornecedor','Fornecedor','fornecedor',{area:f.area,grupo:f.grupo,familia:f.familia});refillSelect('catalogArea','Área','area',{fornecedor:f.fornecedor,grupo:f.grupo,familia:f.familia});refillSelect('catalogGrupo','Grupo','grupo',{fornecedor:f.fornecedor,area:f.area,familia:f.familia});refillSelect('catalogFamilia','Família','familia',{fornecedor:f.fornecedor,area:f.area,grupo:f.grupo})}
 function applyMenus(){refreshCascade();window.dmCatalogFilters={fornecedor:$('catalogFornecedor')?.value||'',area:$('catalogArea')?.value||'',grupo:$('catalogGrupo')?.value||'',familia:$('catalogFamilia')?.value||''};window.dmCatalogState?.refresh();setTimeout(renderConfig,20)}
 function resetMenus(){['catalogFornecedor','catalogArea','catalogGrupo','catalogFamilia'].forEach(id=>{if($(id))$(id).value=''});window.dmCatalogFilters={};const q=$('catalogSearch');if(q)q.value='';refreshCascade();window.dmCatalogState?.refresh();setTimeout(renderConfig,20)}
-function imageCandidates(code){const b='images/artigos/'+String(code).trim().replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_');return [b+'.jpg',b+'.jpeg',b+'.png',b+'.webp']}
-function imageTag(a){const cs=imageCandidates(a.codigo);return `<img src="${esc(cs[0])}" data-fallback='${esc(JSON.stringify(cs.slice(1)))}' alt="${esc(a.codigo)}">`}
+function imageCandidates(code){const declared=typeof window.dmCatalogManifestMedia==='function'?window.dmCatalogManifestMedia(code,'foto'):undefined;if(declared!==undefined)return declared?[declared]:[];const b='images/artigos/'+String(code).trim().replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_');return [b+'.jpg',b+'.jpeg',b+'.png',b+'.webp']}
+function imageTag(a){const cs=imageCandidates(a.codigo);if(!cs.length)return '<span>Sem fotografia</span>';return `<img src="${esc(cs[0])}" data-fallback='${esc(JSON.stringify(cs.slice(1)))}' alt="${esc(a.codigo)}">`}
 function loadFallbacks(root){root.querySelectorAll('img[data-fallback]').forEach(img=>{let arr=[];try{arr=JSON.parse(img.dataset.fallback||'[]')}catch(_){};img.onerror=()=>{const n=arr.shift();if(n)img.src=n;else{const p=img.parentElement;img.remove();if(p)p.innerHTML='<span>Sem fotografia</span>'}}})}
 function includedArticles(){return articles().filter(a=>articleConfig(a).included)}
 function cardHTML(a){return `<article class="a4-card" data-info-code="${esc(a.codigo)}"><div class="a4-photo">${imageTag(a)}</div><div class="a4-card-body"><div class="a4-code">${esc(a.codigo)}</div><div class="a4-desc">${esc(a.descricao||'')}</div><div class="a4-meta">${esc(a.fornecedor||'')}</div></div></article>`}
