@@ -192,6 +192,39 @@ table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:9px 8px;
 <style id="catalogMediaFixStyles">
 #catalogList [hidden]{display:none!important}
 </style>
+
+<style id="mobile-fix-overrides">
+@media (max-width:1024px){
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:420px!important}
+.catalog-sidebar{position:static!important;max-height:none!important}
+.catalog-shell{grid-template-columns:1fr!important}
+}
+@media (max-width:768px){
+body{overflow-x:hidden}
+.head{flex-direction:column;align-items:flex-start}
+.brand{flex-wrap:wrap}
+.upload{grid-template-columns:1fr!important}
+.filters{grid-template-columns:1fr!important}
+.cards{grid-template-columns:1fr!important}
+.tables{grid-template-columns:1fr!important}
+.grid.two,.commercial-secondary-grid,.dm-product-grid{grid-template-columns:1fr!important}
+.calendar-day{min-height:90px}
+.drawer{width:100vw}
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:340px!important;padding:8px}
+svg text{font-size:10px!important}
+.logo{width:110px}
+h1{font-size:24px}
+}
+</style>
+
 </head>
 <body>
 <header><div class="head"><div class="brand"><img class="logo" src="data:image/jpeg;base64,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" alt="DM"><div><h1>Portal DM</h1><div class="sub">Vendas DM</div></div></div></div></header>
@@ -697,7 +730,7 @@ function updateAdvanced(arr){
 }
 
 function updateTables(arr){ const clientes=group(arr,'cliente'), artigos=group(arr,'artigo_desc'), vendedores=group(arr,'vendedor'), areas=group(arr,'area'); const money=r=>eur2.format(r.sem_iva), margem=r=>eur2.format(r.margem), pct=r=>r.sem_iva?(r.margem/r.sem_iva*100).toFixed(1).replace('.',',')+'%':'-'; table('tableClientes', clientes.slice(0,10), [{h:'Cliente',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Margem %',f:pct,num:true}]); table('tableArtigos', artigos.slice(0,10), [{h:'Artigo',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Qtd',f:r=>numf.format(r.qtd),num:true}]); table('tableVendedores', vendedores.slice(0,10), [{h:'Vendedor',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Margem',f:margem,num:true}]); table('tableAreas', areas, [{h:'Área',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'IVA',f:r=>eur2.format(r.iva),num:true},{h:'Com IVA',f:r=>eur2.format(r.com_iva),num:true},{h:'Margem',f:margem,num:true},{h:'Margem %',f:pct,num:true},{h:'Clientes',f:r=>numf.format(r.clientes.size),num:true},{h:'Artigos',f:r=>numf.format(r.artigos.size),num:true}]); barChart('chartClientes',clientes.slice(0,10),'nome','sem_iva','cliente'); barChart('chartVendedores',vendedores.slice(0,10),'nome','sem_iva','vendedor'); barChart('chartArtigos',artigos.slice(0,10),'nome','sem_iva','artigo'); barChart('chartAreas',areas.slice(0,12),'nome','sem_iva','area'); portugalMap('chartPortugal', arr); }
-function update(){ const arr=filtered(); updateKpis(arr); monthlyChart('chartMonthly',arr); updateTables(arr); updateAdvanced(arr); }
+function update(){ const arr=filtered(); updateKpis(arr); monthlyChart('chartMonthly',arr); updateTables(arr); updateAdvanced(arr); window.dmCheckWeeklyReport?.(); }
 
 function initTabs(){
  document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -1370,7 +1403,40 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
     win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Calendário comercial</title><style>
     body{font-family:Arial;color:#0b1533;padding:24px}.head{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0657ff;padding-bottom:12px}.head img{width:145px}
     h1{margin:0}.sub{color:#64748b;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{padding:9px;border-bottom:1px solid #dbe3ef;text-align:left;font-size:12px}th{background:#f8fafc;text-transform:uppercase;font-size:10px}
-    .credit{text-align:right;margin-top:20px;color:#64748b;font-size:11px;font-weight:bold}@page{size:A4 landscape;margin:12mm}</style></head><body>
+    .credit{text-align:right;margin-top:20px;color:#64748b;font-size:11px;font-weight:bold}@page{size:A4 landscape;margin:12mm}</style>
+<style id="mobile-fix-overrides">
+@media (max-width:1024px){
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:420px!important}
+.catalog-sidebar{position:static!important;max-height:none!important}
+.catalog-shell{grid-template-columns:1fr!important}
+}
+@media (max-width:768px){
+body{overflow-x:hidden}
+.head{flex-direction:column;align-items:flex-start}
+.brand{flex-wrap:wrap}
+.upload{grid-template-columns:1fr!important}
+.filters{grid-template-columns:1fr!important}
+.cards{grid-template-columns:1fr!important}
+.tables{grid-template-columns:1fr!important}
+.grid.two,.commercial-secondary-grid,.dm-product-grid{grid-template-columns:1fr!important}
+.calendar-day{min-height:90px}
+.drawer{width:100vw}
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:340px!important;padding:8px}
+svg text{font-size:10px!important}
+.logo{width:110px}
+h1{font-size:24px}
+}
+</style>
+
+</head><body>
     <div class="head"><div><h1>Calendário comercial</h1><div class="sub">${cEsc(calendarState.month.toLocaleDateString('pt-PT',{month:'long',year:'numeric'}))}</div></div>${logo?`<img src="${logo}">`:''}</div>
     <table><thead><tr><th>Data</th><th>Hora</th><th>Vendedor</th><th>Área de negócio</th><th>Assunto</th><th>Cliente</th></tr></thead><tbody>${events.map(e=>`<tr><td>${cEsc(e.date)}</td><td>${cEsc(e.time)}</td><td>${cEsc(e.seller)}</td><td>${cEsc(e.area||'')}</td><td>${cEsc(e.subject)}</td><td>${cEsc(e.client||'')}</td></tr>`).join('')}</tbody></table>
     <div class="credit">Desenvolvido By Domingos &amp; Morgado</div><script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>
@@ -1431,7 +1497,40 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
       .credit{text-align:right;margin-top:5px;color:#64748b;font-size:6.5px;font-weight:bold}
       @page{size:A4 landscape;margin:0}
       @media print{thead{display:table-header-group}tr{page-break-inside:avoid}}
-    </style></head><body>
+    </style>
+<style id="mobile-fix-overrides">
+@media (max-width:1024px){
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:420px!important}
+.catalog-sidebar{position:static!important;max-height:none!important}
+.catalog-shell{grid-template-columns:1fr!important}
+}
+@media (max-width:768px){
+body{overflow-x:hidden}
+.head{flex-direction:column;align-items:flex-start}
+.brand{flex-wrap:wrap}
+.upload{grid-template-columns:1fr!important}
+.filters{grid-template-columns:1fr!important}
+.cards{grid-template-columns:1fr!important}
+.tables{grid-template-columns:1fr!important}
+.grid.two,.commercial-secondary-grid,.dm-product-grid{grid-template-columns:1fr!important}
+.calendar-day{min-height:90px}
+.drawer{width:100vw}
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:340px!important;padding:8px}
+svg text{font-size:10px!important}
+.logo{width:110px}
+h1{font-size:24px}
+}
+</style>
+
+</head><body>
       <section class="page">
         <div class="head"><div><h1>Centro de pesquisa comercial</h1><div class="sub">${cEsc(title)}</div></div>${logoSrc?`<img src="${logoSrc}" alt="Logo">`:''}</div>
         <div class="kpis">
@@ -1722,7 +1821,40 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
       h1{margin:0}.sub{color:#64748b}.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:9px 0}.kpi{border:1px solid #dbe3ef;border-radius:7px;padding:7px}.kpi span{font-size:7px;color:#64748b}.kpi b{display:block;font-size:12px;margin-top:3px}
       .chart{height:380px;border:1px solid #dbe3ef;border-radius:8px;padding:5px;overflow:hidden}.chart svg{width:100%;height:360px}
       table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:4px;border-bottom:1px solid #dbe3ef}.num{text-align:right}.credit{text-align:right;margin-top:10px;color:#64748b;font-weight:bold}@page{size:A4 landscape;margin:10mm}
-    </style></head><body><div class="head"><div><h1>Relatório de Gestão</h1><div class="sub">${mEsc(m$('mgBreadcrumb').textContent)}</div></div>${logo?`<img src="${logo}">`:''}</div>
+    </style>
+<style id="mobile-fix-overrides">
+@media (max-width:1024px){
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:420px!important}
+.catalog-sidebar{position:static!important;max-height:none!important}
+.catalog-shell{grid-template-columns:1fr!important}
+}
+@media (max-width:768px){
+body{overflow-x:hidden}
+.head{flex-direction:column;align-items:flex-start}
+.brand{flex-wrap:wrap}
+.upload{grid-template-columns:1fr!important}
+.filters{grid-template-columns:1fr!important}
+.cards{grid-template-columns:1fr!important}
+.tables{grid-template-columns:1fr!important}
+.grid.two,.commercial-secondary-grid,.dm-product-grid{grid-template-columns:1fr!important}
+.calendar-day{min-height:90px}
+.drawer{width:100vw}
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:340px!important;padding:8px}
+svg text{font-size:10px!important}
+.logo{width:110px}
+h1{font-size:24px}
+}
+</style>
+
+</head><body><div class="head"><div><h1>Relatório de Gestão</h1><div class="sub">${mEsc(m$('mgBreadcrumb').textContent)}</div></div>${logo?`<img src="${logo}">`:''}</div>
     <div class="kpis"><div class="kpi"><span>Sem IVA</span><b>${mMoney(sumRows(rows,'valor_liquido'))}</b></div><div class="kpi"><span>IVA</span><b>${mMoney(sumRows(rows,'iva'))}</b></div><div class="kpi"><span>Com IVA</span><b>${mMoney(sumRows(rows,'valor_total'))}</b></div><div class="kpi"><span>Margem</span><b>${mMoney(sumRows(rows,'margem'))}</b></div><div class="kpi"><span>Margem %</span><b>${(sumRows(rows,'valor_liquido')?sumRows(rows,'margem')/sumRows(rows,'valor_liquido')*100:0).toFixed(1).replace('.',',')}%</b></div></div>
     <div class="chart">${chartHtml}</div>
     <table><thead><tr><th>Descrição</th><th class="num">Sem IVA</th><th class="num">Com IVA</th><th class="num">Margem</th></tr></thead><tbody>${grouped.map(g=>`<tr><td>${mEsc(g.nome)}</td><td class="num">${mMoney(g.sem_iva)}</td><td class="num">${mMoney(g.com_iva)}</td><td class="num">${mMoney(g.margem)}</td></tr>`).join('')}</tbody></table>
@@ -1768,9 +1900,40 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
   .admin-pref-item{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
   .admin-pref-item span{font-weight:800}
   .admin-pref-item input{width:auto;transform:scale(1.2)}
-  .admin-pref-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+  .admin-pref-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .entry-note-editor{margin-top:26px;border-top:1px solid var(--line);padding-top:22px}
+  .entry-note-editor textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;color:var(--ink);background:#fff}
+  .entry-note-media-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,320px);gap:14px;align-items:start;margin-top:12px}
+  .entry-note-image-preview{min-height:150px;border:1px dashed var(--line);border-radius:14px;background:#f8fafc;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:10px;color:var(--muted);font-size:12px;text-align:center}
+  .entry-note-image-preview img{display:block;width:100%;max-height:260px;object-fit:contain;border-radius:10px}
+  .entry-note-image-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .entry-note-expiry-status{font-size:12px;color:var(--muted);margin-top:7px}
+  .entry-note-toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;margin:12px 0}
+  .entry-note-toggle input{width:auto;transform:scale(1.2)}
+  #entryNoteOverlay{position:fixed;inset:0;z-index:9998;background:rgba(8,26,58,.88);display:flex;align-items:center;justify-content:center;padding:22px;backdrop-filter:blur(8px)}
+  #entryNoteOverlay.hidden{display:none}
+  .entry-note-card{width:min(620px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:24px;padding:28px;box-shadow:0 30px 70px rgba(0,0,0,.32);text-align:center}
+  .entry-note-card>img{width:155px;max-height:64px;object-fit:contain;margin-bottom:14px}
+  .entry-note-banner{width:100%;max-height:360px;object-fit:contain;border-radius:16px;margin:0 0 18px;background:#f8fafc;border:1px solid var(--line)}
+  .entry-note-card h2{margin:0 0 14px;font-size:27px}
+  .entry-note-content{white-space:pre-wrap;text-align:left;line-height:1.65;color:#334155;background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:16px;overflow-wrap:anywhere}
+  .entry-note-close{margin-top:20px;min-width:150px;background:var(--accent);padding:12px 18px}
+
+  .weekly-report-editor{margin-top:24px;border-top:1px solid var(--line);padding-top:22px}
+  #weeklyReportOverlay{position:fixed;inset:0;z-index:9997;background:rgba(8,26,58,.88);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
+  #weeklyReportOverlay.hidden{display:none}
+  .weekly-report-card{width:min(980px,97vw);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:26px;box-shadow:0 30px 70px rgba(0,0,0,.32)}
+  .weekly-report-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .weekly-report-head h2{margin:0 0 5px}.weekly-report-kpis{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:12px;margin:16px 0}
+  .weekly-report-kpi{border:1px solid var(--line);border-radius:14px;padding:13px;background:#f8fafc}.weekly-report-kpi span{display:block;font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase}.weekly-report-kpi strong{display:block;font-size:21px;margin-top:5px}
+  .weekly-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.weekly-report-section{border:1px solid var(--line);border-radius:15px;padding:14px}.weekly-report-section h3{margin:0 0 10px;font-size:16px}
+  .weekly-report-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
+  @media(max-width:760px){.weekly-report-kpis,.weekly-report-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.weekly-report-kpis,.weekly-report-grid{grid-template-columns:1fr}}
+  @media print{body.weekly-report-print>*:not(#weeklyReportOverlay){display:none!important}body.weekly-report-print #weeklyReportOverlay{position:static;background:#fff;padding:0}body.weekly-report-print .weekly-report-card{width:100%;max-height:none;box-shadow:none;padding:0}.weekly-report-actions{display:none!important}}
+
   .role-hidden{display:none!important}
-  @media(max-width:700px){.admin-pref-grid{grid-template-columns:1fr}.auth-session{width:100%;justify-content:flex-end}}
+  @media(max-width:700px){.admin-pref-grid,.entry-note-media-grid{grid-template-columns:1fr}.auth-session{width:100%;justify-content:flex-end}}
 </style>
 
 <script id="authScript">
@@ -1791,7 +1954,7 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
       'tab-catalogo':true,'tab-comercial':true,'tab-geografia':true,'tab-produto':true,
       'tab-drilldown':true,'tab-gestao':false
     },
-    allowPdf:true,allowCsv:true,allowCalendarEdit:true,allowManagement:false
+    allowPdf:true,allowCsv:true,allowCalendarEdit:true,allowManagement:false,allowWeeklyReport:false
   };
   const FULL_ACCESS_PREFS={...DEFAULT_PREFS,tabs:Object.fromEntries(Object.keys(DEFAULT_PREFS.tabs).map(k=>[k,true])),allowManagement:true};
   let currentUser=null;
@@ -1826,7 +1989,7 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
   }
   function insertAdminTab(){
     if(a$('tab-admin-pref'))return;const tabs=document.querySelector('.tabs'),main=document.querySelector('main');if(!tabs||!main)return;
-    const btn=document.createElement('button');btn.className='tab-btn assistance-only';btn.type='button';btn.dataset.tab='tab-admin-pref';btn.textContent='Preferências';tabs.appendChild(btn);
+    const btn=document.createElement('button');btn.className='tab-btn assistance-only';btn.type='button';btn.dataset.tab='tab-admin-pref';btn.textContent='Assistência';tabs.appendChild(btn);
     const section=document.createElement('section');section.id='tab-admin-pref';section.className='tab-panel assistance-only';section.innerHTML=`
       <div class="grid"><div class="panel wide">
         <h2>Preferências dos utilizadores</h2>
@@ -1839,20 +2002,145 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
           <label class="admin-pref-item"><span>Exportar CSV</span><input id="prefAllowCsv" type="checkbox"></label>
           <label class="admin-pref-item"><span>Editar calendário</span><input id="prefAllowCalendar" type="checkbox"></label>
           <label class="admin-pref-item"><span>Gestão / Administração</span><input id="prefAllowManagement" type="checkbox"></label>
+          <label class="admin-pref-item"><span>Relatório semanal automático</span><input id="prefAllowWeeklyReport" type="checkbox"></label>
         </div>
         <div class="admin-pref-actions"><button id="openManagementFromPrefs" type="button">Abrir Gestão / Administração</button><button id="prefReset" class="secondary" type="button">Repor predefinições</button><button id="prefSave" class="accent" type="button">Guardar preferências</button></div>
+        <div class="entry-note-editor">
+          <h2>Nota de entrada</h2>
+          <div class="smallnote">Esta nota aparece aos utilizadores depois de iniciarem sessão. Pode ser usada para manutenção, avisos ou qualquer outra informação.</div>
+          <label class="entry-note-toggle"><span><b>Apresentar nota na entrada</b></span><input id="entryNoteEnabled" type="checkbox"></label>
+          <div class="filter"><label>Título</label><input id="entryNoteTitle" type="text" maxlength="100" placeholder="Ex.: Portal em manutenção"></div>
+          <div class="filter" style="margin-top:12px"><label>Mensagem</label><textarea id="entryNoteText" maxlength="3000" placeholder="Escreva aqui a nota que pretende apresentar..."></textarea></div>
+          <div class="entry-note-media-grid">
+            <div>
+              <div class="filter"><label>Imagem da nota</label><input id="entryNoteImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif"></div>
+              <div class="entry-note-image-actions"><button id="entryNoteRemoveImage" class="secondary" type="button">Remover imagem</button></div>
+              <div class="smallnote">A imagem fica guardada neste navegador. Para melhor desempenho, use ficheiros até 2 MB.</div>
+            </div>
+            <div id="entryNoteImagePreview" class="entry-note-image-preview">Sem imagem selecionada</div>
+          </div>
+          <div class="filter" style="margin-top:12px"><label>Visível até</label><input id="entryNoteVisibleUntil" type="date"><div id="entryNoteExpiryStatus" class="entry-note-expiry-status">Sem data limite: a nota permanece visível enquanto estiver ativa.</div></div>
+          <div class="admin-pref-actions"><button id="entryNotePreview" class="secondary" type="button">Pré-visualizar</button><button id="entryNoteSave" class="accent" type="button">Guardar nota</button></div>
+        </div>
+        <div class="weekly-report-editor">
+          <h2>Relatórios semanais</h2>
+          <div class="smallnote"><b>Onde está o relatório:</b> nesta área de Assistência. Escolha abaixo o utilizador e clique em “Abrir relatório”. Para cada utilizador, o relatório automático também aparece no primeiro acesso após terminar a semana de segunda-feira a domingo, desde que a permissão esteja ativa.</div>
+          <div class="filter" style="max-width:420px;margin-top:16px"><label>Relatório do utilizador</label><select id="weeklyReportUser"><option value="administrador">Administrador — todos</option><option value="rui_ferreira">Rui Ferreira</option><option value="joao_rebelo">João Rebelo</option><option value="sandro_loureiro">Sandro Loureiro</option></select></div>
+          <div class="admin-pref-actions"><button id="weeklyReportOpen" class="accent" type="button">Abrir relatório semanal</button><button id="weeklyReportClearHistory" class="secondary" type="button">Repor histórico de apresentação</button></div>
+        </div>
       </div></div>`;
     const footer=main.querySelector('.footer');footer?main.insertBefore(section,footer):main.appendChild(section);
-    btn.addEventListener('click',()=>activateTab('tab-admin-pref'));a$('prefTargetUser').addEventListener('change',renderAdminPrefs);a$('prefSave').onclick=saveAdminPrefs;a$('prefReset').onclick=resetTargetPrefs;a$('openManagementFromPrefs').onclick=()=>a$('dmManagementButton')?.click();
+    btn.addEventListener('click',()=>activateTab('tab-admin-pref'));a$('prefTargetUser').addEventListener('change',renderAdminPrefs);a$('prefSave').onclick=saveAdminPrefs;a$('prefReset').onclick=resetTargetPrefs;a$('openManagementFromPrefs').onclick=()=>a$('dmManagementButton')?.click();a$('entryNoteSave').onclick=saveEntryNote;a$('entryNotePreview').onclick=()=>showEntryNote(true);a$('entryNoteImage').addEventListener('change',handleEntryNoteImage);a$('entryNoteRemoveImage').onclick=removeEntryNoteImage;a$('entryNoteVisibleUntil').addEventListener('change',updateEntryNoteExpiryStatus);a$('weeklyReportOpen').onclick=()=>showWeeklyReport(true,a$('weeklyReportUser')?.value||'administrador');a$('weeklyReportClearHistory').onclick=clearWeeklyReportHistory;renderEntryNoteEditor();
   }
+
+  function insertWeeklyReportTab(){
+    if(a$('tab-weekly-report'))return;
+    const tabs=document.querySelector('.tabs'),main=document.querySelector('main');if(!tabs||!main)return;
+    const btn=document.createElement('button');btn.className='tab-btn weekly-report-access';btn.type='button';btn.dataset.tab='tab-weekly-report';btn.textContent='Relatório semanal';tabs.appendChild(btn);
+    const section=document.createElement('section');section.id='tab-weekly-report';section.className='tab-panel weekly-report-access';section.innerHTML=`
+      <div class="grid"><div class="panel wide">
+        <h2>Relatório semanal</h2>
+        <div class="smallnote">Relatório da última semana concluída, de segunda-feira a domingo.</div>
+        <div id="weeklyReportOwnSelector" class="filter" style="max-width:420px;margin-top:16px"><label>Relatório do utilizador</label><select id="weeklyReportOwnUser"><option value="administrador">Administrador — todos</option><option value="rui_ferreira">Rui Ferreira</option><option value="joao_rebelo">João Rebelo</option><option value="sandro_loureiro">Sandro Loureiro</option></select></div>
+        <div class="admin-pref-actions"><button id="weeklyReportOwnOpen" class="accent" type="button">Abrir relatório semanal</button></div>
+        <div class="smallnote" style="margin-top:14px">Quando o automatismo está ativo, o relatório também é apresentado automaticamente no primeiro acesso após o fim da semana.</div>
+      </div></div>`;
+    const footer=main.querySelector('.footer');footer?main.insertBefore(section,footer):main.appendChild(section);
+    btn.addEventListener('click',()=>activateTab('tab-weekly-report'));
+    a$('weeklyReportOwnOpen').onclick=()=>{
+      const requested=currentUser==='assistencia'?(a$('weeklyReportOwnUser')?.value||'administrador'):currentUser;
+      showWeeklyReport(true,requested);
+    };
+  }
+
+  let entryNoteImageData='';
+  function loadEntryNote(){
+    try{return Object.assign({enabled:false,title:'Informação ao utilizador',text:'',imageData:'',visibleUntil:''},JSON.parse(localStorage.getItem('dmEntryNote')||'{}')||{})}catch(e){return {enabled:false,title:'Informação ao utilizador',text:'',imageData:'',visibleUntil:''}}
+  }
+  function renderEntryNoteImagePreview(){
+    const box=a$('entryNoteImagePreview');if(!box)return;
+    box.innerHTML=entryNoteImageData?`<img src="${entryNoteImageData}" alt="Pré-visualização da imagem da nota">`:'Sem imagem selecionada';
+    if(a$('entryNoteRemoveImage'))a$('entryNoteRemoveImage').disabled=!entryNoteImageData;
+  }
+  function handleEntryNoteImage(event){
+    const file=event.target.files&&event.target.files[0];if(!file)return;
+    if(!file.type.startsWith('image/')){alert('Selecione um ficheiro de imagem válido.');event.target.value='';return}
+    if(file.size>2*1024*1024){alert('A imagem excede 2 MB. Escolha uma imagem mais pequena.');event.target.value='';return}
+    const reader=new FileReader();reader.onload=()=>{entryNoteImageData=String(reader.result||'');renderEntryNoteImagePreview()};reader.onerror=()=>alert('Não foi possível ler a imagem.');reader.readAsDataURL(file);
+  }
+  function removeEntryNoteImage(){entryNoteImageData='';if(a$('entryNoteImage'))a$('entryNoteImage').value='';renderEntryNoteImagePreview()}
+  function isEntryNoteExpired(note){
+    if(!note.visibleUntil)return false;const end=new Date(note.visibleUntil+'T23:59:59');return Number.isFinite(end.getTime())&&new Date()>end;
+  }
+  function updateEntryNoteExpiryStatus(){
+    const el=a$('entryNoteExpiryStatus'),value=a$('entryNoteVisibleUntil')?.value||'';if(!el)return;
+    if(!value){el.textContent='Sem data limite: a nota permanece visível enquanto estiver ativa.';return}
+    const d=new Date(value+'T23:59:59');el.textContent=isNaN(d)?'Data inválida.':(new Date()>d?'Esta data já terminou; a nota não será apresentada.':'A nota será apresentada até '+d.toLocaleDateString('pt-PT')+', inclusive.');
+  }
+  function renderEntryNoteEditor(){
+    const note=loadEntryNote();entryNoteImageData=note.imageData||'';if(a$('entryNoteEnabled'))a$('entryNoteEnabled').checked=note.enabled===true;if(a$('entryNoteTitle'))a$('entryNoteTitle').value=note.title||'';if(a$('entryNoteText'))a$('entryNoteText').value=note.text||'';if(a$('entryNoteVisibleUntil'))a$('entryNoteVisibleUntil').value=note.visibleUntil||'';renderEntryNoteImagePreview();updateEntryNoteExpiryStatus();
+  }
+  function saveEntryNote(){
+    const note={enabled:a$('entryNoteEnabled').checked,title:(a$('entryNoteTitle').value||'Informação ao utilizador').trim(),text:(a$('entryNoteText').value||'').trim(),imageData:entryNoteImageData||'',visibleUntil:a$('entryNoteVisibleUntil')?.value||''};
+    try{localStorage.setItem('dmEntryNote',JSON.stringify(note));alert(note.enabled?(isEntryNoteExpired(note)?'Nota guardada, mas a data de visibilidade já terminou.':'Nota guardada e ativada.'):'Nota guardada e desativada.')}catch(e){alert('Não foi possível guardar a nota. A imagem pode ser demasiado grande para o armazenamento do navegador.')}
+  }
+  function currentEntryNoteForm(){return {enabled:true,title:(a$('entryNoteTitle')?.value||'Informação ao utilizador').trim(),text:(a$('entryNoteText')?.value||'').trim(),imageData:entryNoteImageData||'',visibleUntil:a$('entryNoteVisibleUntil')?.value||''}}
+  function showEntryNote(force=false){
+    const note=force?currentEntryNoteForm():loadEntryNote();
+    if(!force&&(!note.enabled||isEntryNoteExpired(note)))return;if(!note.text&&!note.imageData)return;let overlay=a$('entryNoteOverlay');if(!overlay){overlay=document.createElement('div');overlay.id='entryNoteOverlay';document.body.appendChild(overlay)}
+    const banner=note.imageData?`<img class="entry-note-banner" src="${note.imageData}" alt="Imagem da nota">`:'';const message=note.text?`<div class="entry-note-content">${escapeNote(note.text)}</div>`:'';
+    overlay.innerHTML=`<div class="entry-note-card">${getLogo()?`<img src="${getLogo()}" alt="Logo">`:''}<h2>${escapeNote(note.title||'Informação ao utilizador')}</h2>${banner}${message}<button id="entryNoteClose" class="entry-note-close" type="button">Continuar</button></div>`;overlay.classList.remove('hidden');document.body.classList.add('auth-locked');a$('entryNoteClose').onclick=()=>{overlay.classList.add('hidden');document.body.classList.remove('auth-locked')};
+  }
+  function weeklyEligibleUser(user){return ['administrador','rui_ferreira','joao_rebelo','sandro_loureiro'].includes(user)}
+  function isoWeekInfo(date){
+    const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+    const day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-day);
+    const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    const week=Math.ceil((((d-yearStart)/86400000)+1)/7);
+    return {year:d.getUTCFullYear(),week};
+  }
+  function completedWeekInfo(){
+    const today=new Date(),day=today.getDay()||7;
+    const sunday=new Date(today);sunday.setHours(12,0,0,0);sunday.setDate(today.getDate()-day);
+    const monday=new Date(sunday);monday.setDate(sunday.getDate()-6);
+    const iso=isoWeekInfo(monday);
+    return {year:iso.year,week:iso.week,monday,sunday,key:iso.year+'-W'+String(iso.week).padStart(2,'0')};
+  }
+  function reportRowsFor(user,info){
+    let rows=(window.DATA||DATA||[]).filter(r=>Number(r.ano)===Number(info.year)&&Number(String(r.semana||'').replace(/\D/g,''))===Number(info.week));
+    const sellerMap={rui_ferreira:'RUI FERREIRA',joao_rebelo:'JOÃO REBELO',sandro_loureiro:'SANDRO LOUREIRO'};
+    if(sellerMap[user])rows=rows.filter(r=>norm(cleanFilterLabel(r.vendedor))===norm(sellerMap[user]));
+    return rows;
+  }
+  function weeklyGroup(rows,key){const m=new Map();rows.forEach(r=>{const k=r[key]||'N/D';m.set(k,(m.get(k)||0)+(+r.valor_liquido||0))});return [...m.entries()].sort((a,b)=>b[1]-a[1])}
+  function weeklyMoney(v){return new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(v||0)}
+  function weeklyEsc(v){return String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]))}
+  function weeklyTable(items,label){return items.length?`<table><thead><tr><th>${label}</th><th class="num">Vendas sem IVA</th></tr></thead><tbody>${items.slice(0,10).map(([n,v])=>`<tr><td>${weeklyEsc(n)}</td><td class="num">${weeklyMoney(v)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Sem dados nesta semana.</div>'}
+  function showWeeklyReport(force=false,requestedUser=''){
+    const activeUser=currentUser||sessionStorage.getItem('dmCurrentUser')||'';
+    const user=(force&&activeUser==='assistencia'&&requestedUser)?requestedUser:activeUser;if(!weeklyEligibleUser(user)){if(force)alert('Este perfil não está incluído nos relatórios semanais.');return}
+    const prefs=loadPrefs(user);if(!force&&!prefs.allowWeeklyReport)return;
+    const info=completedWeekInfo(),rows=reportRowsFor(user,info);if(!force&&!rows.length)return;
+    const seenKey='dmWeeklyReportSeen:'+user,seen=localStorage.getItem(seenKey)||'';if(!force&&seen===info.key)return;
+    const sem=rows.reduce((a,r)=>a+(+r.valor_liquido||0),0),iva=rows.reduce((a,r)=>a+(+r.iva||0),0),total=rows.reduce((a,r)=>a+(+r.valor_total||0),0),margem=rows.reduce((a,r)=>a+(+r.margem||0),0);
+    const label=AUTH_USERS[user]?.label||user,period=info.monday.toLocaleDateString('pt-PT')+' a '+info.sunday.toLocaleDateString('pt-PT');
+    let overlay=a$('weeklyReportOverlay');if(!overlay){overlay=document.createElement('div');overlay.id='weeklyReportOverlay';document.body.appendChild(overlay)}
+    overlay.innerHTML=`<article class="weekly-report-card"><div class="weekly-report-head"><div><h2>Relatório semanal — ${weeklyEsc(label)}</h2><div class="smallnote">Semana ${String(info.week).padStart(2,'0')} · ${period}</div></div>${getLogo()?`<img src="${getLogo()}" alt="Logo" style="width:130px;max-height:54px;object-fit:contain">`:''}</div><div class="weekly-report-kpis"><div class="weekly-report-kpi"><span>Vendas sem IVA</span><strong>${weeklyMoney(sem)}</strong></div><div class="weekly-report-kpi"><span>Vendas com IVA</span><strong>${weeklyMoney(total)}</strong></div><div class="weekly-report-kpi"><span>Margem</span><strong>${weeklyMoney(margem)}</strong></div><div class="weekly-report-kpi"><span>Clientes</span><strong>${new Set(rows.map(r=>r.cliente)).size}</strong></div></div><div class="weekly-report-grid"><section class="weekly-report-section"><h3>Top clientes</h3>${weeklyTable(weeklyGroup(rows,'cliente'),'Cliente')}</section><section class="weekly-report-section"><h3>Top artigos</h3>${weeklyTable(weeklyGroup(rows,'artigo_desc'),'Artigo')}</section><section class="weekly-report-section"><h3>Resumo</h3><table><tbody><tr><th>IVA</th><td class="num">${weeklyMoney(iva)}</td></tr><tr><th>Quantidade</th><td class="num">${rows.reduce((a,r)=>a+(+r.quantidade||0),0).toLocaleString('pt-PT')}</td></tr><tr><th>Artigos únicos</th><td class="num">${new Set(rows.map(r=>r.artigo)).size}</td></tr><tr><th>Linhas</th><td class="num">${rows.length}</td></tr></tbody></table></section><section class="weekly-report-section"><h3>Top áreas</h3>${weeklyTable(weeklyGroup(rows,'area'),'Área')}</section></div><div class="weekly-report-actions"><button id="weeklyReportPrint" type="button">Imprimir / Guardar PDF</button><button id="weeklyReportClose" class="accent" type="button">Fechar</button></div></article>`;
+    overlay.classList.remove('hidden');document.body.classList.add('auth-locked');if(!force)localStorage.setItem(seenKey,info.key);
+    a$('weeklyReportPrint').onclick=()=>{document.body.classList.add('weekly-report-print');window.print();setTimeout(()=>document.body.classList.remove('weekly-report-print'),300)};
+    a$('weeklyReportClose').onclick=()=>{overlay.classList.add('hidden');document.body.classList.remove('auth-locked')};
+  }
+  function clearWeeklyReportHistory(){Object.keys(localStorage).filter(k=>k.startsWith('dmWeeklyReportSeen:')).forEach(k=>localStorage.removeItem(k));alert('Histórico dos relatórios semanais reposto.')}
+  window.dmCheckWeeklyReport=()=>setTimeout(()=>showWeeklyReport(false),250);
+  function escapeNote(value){return String(value??'').replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]))}
   function tabLabels(){const map={};document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{if(btn.dataset.tab!=='tab-admin-pref')map[btn.dataset.tab]=btn.textContent.trim()});return map}
   function renderAdminPrefs(){
     if(!a$('prefTargetUser'))return;const target=a$('prefTargetUser').value||'administrador',prefs=loadPrefs(target),labels=tabLabels(),root=a$('adminPrefTabs');
     root.innerHTML=Object.entries(labels).map(([id,label])=>`<label class="admin-pref-item"><span>${label}</span><input type="checkbox" data-pref-tab="${id}" ${prefs.tabs[id]!==false?'checked':''}></label>`).join('');
-    a$('prefAllowPdf').checked=prefs.allowPdf!==false;a$('prefAllowCsv').checked=prefs.allowCsv!==false;a$('prefAllowCalendar').checked=prefs.allowCalendarEdit!==false;a$('prefAllowManagement').checked=prefs.allowManagement===true;
+    a$('prefAllowPdf').checked=prefs.allowPdf!==false;a$('prefAllowCsv').checked=prefs.allowCsv!==false;a$('prefAllowCalendar').checked=prefs.allowCalendarEdit!==false;a$('prefAllowManagement').checked=prefs.allowManagement===true;if(a$('prefAllowWeeklyReport'))a$('prefAllowWeeklyReport').checked=prefs.allowWeeklyReport===true;
   }
   function saveAdminPrefs(){
-    const target=a$('prefTargetUser').value,prefs=loadPrefs(target);document.querySelectorAll('[data-pref-tab]').forEach(el=>prefs.tabs[el.dataset.prefTab]=el.checked);prefs.allowPdf=a$('prefAllowPdf').checked;prefs.allowCsv=a$('prefAllowCsv').checked;prefs.allowCalendarEdit=a$('prefAllowCalendar').checked;prefs.allowManagement=a$('prefAllowManagement').checked;savePrefs(target,prefs);if(target===currentUser)applyRole();alert('Preferências guardadas para '+AUTH_USERS[target].label+'.');
+    const target=a$('prefTargetUser').value,prefs=loadPrefs(target);document.querySelectorAll('[data-pref-tab]').forEach(el=>prefs.tabs[el.dataset.prefTab]=el.checked);prefs.allowPdf=a$('prefAllowPdf').checked;prefs.allowCsv=a$('prefAllowCsv').checked;prefs.allowCalendarEdit=a$('prefAllowCalendar').checked;prefs.allowManagement=a$('prefAllowManagement').checked;prefs.allowWeeklyReport=a$('prefAllowWeeklyReport')?.checked===true;savePrefs(target,prefs);if(target===currentUser)applyRole();alert('Preferências guardadas para '+AUTH_USERS[target].label+'.');
   }
   function resetTargetPrefs(){const target=a$('prefTargetUser').value;savePrefs(target,defaultFor(target));renderAdminPrefs();if(target===currentUser)applyRole();alert('Preferências repostas para '+AUTH_USERS[target].label+'.')}
   function activateTab(id){document.querySelectorAll('.tab-btn').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.toggle('active',x.id===id))}
@@ -1862,12 +2150,16 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
     Object.entries(prefs.tabs).forEach(([id,allowed])=>{if(!allowed){document.querySelector(`.tab-btn[data-tab="${id}"]`)?.classList.add('role-hidden');a$(id)?.classList.add('role-hidden')}});
     document.querySelectorAll('#pdfBtn,#commercialPdf,#calendarFinalizePdf,#mgPdf').forEach(el=>el&&el.classList.toggle('role-hidden',prefs.allowPdf===false));document.querySelectorAll('button[onclick*="downloadCSV"],#downloadCSVBtn').forEach(el=>el.classList.toggle('role-hidden',prefs.allowCsv===false));document.querySelectorAll('#calendarForm,#calendarAdd').forEach(el=>el&&el.classList.toggle('role-hidden',prefs.allowCalendarEdit===false));
     const managementAllowed=isAssist||prefs.allowManagement===true;document.querySelectorAll('#dmManagementButton').forEach(el=>el.classList.toggle('role-hidden',!managementAllowed));
+    const weeklyAllowed=isAssist||(weeklyEligibleUser(currentUser)&&prefs.allowWeeklyReport===true);
+    document.querySelectorAll('.weekly-report-access').forEach(el=>el.classList.toggle('role-hidden',!weeklyAllowed));
+    if(a$('weeklyReportOwnSelector'))a$('weeklyReportOwnSelector').style.display=isAssist?'block':'none';
+    if(a$('weeklyReportOwnUser')&&currentUser!=='assistencia')a$('weeklyReportOwnUser').value=currentUser;
     const active=document.querySelector('.tab-btn.active');if(!active||active.classList.contains('role-hidden')){const first=[...document.querySelectorAll('.tab-btn[data-tab]:not(.role-hidden)')][0];if(first)activateTab(first.dataset.tab)}
     if(a$('authUserLabel'))a$('authUserLabel').textContent=AUTH_USERS[currentUser].label;renderAdminPrefs();
   }
-  function login(){const role=a$('authRole').value,password=a$('authPassword').value;if(!AUTH_USERS[role]||AUTH_USERS[role].password!==password){a$('authError').textContent='Perfil ou palavra-passe incorretos.';return}currentUser=role;window.dmCurrentUser=role;sessionStorage.setItem('dmCurrentUser',role);a$('authOverlay').classList.add('hidden');document.body.classList.remove('auth-locked');applyRole();if(typeof initSelects==='function'&&Array.isArray(DATA)&&DATA.length)initSelects();if(typeof window.update==='function')window.update()}
+  function login(){const role=a$('authRole').value,password=a$('authPassword').value;if(!AUTH_USERS[role]||AUTH_USERS[role].password!==password){a$('authError').textContent='Perfil ou palavra-passe incorretos.';return}currentUser=role;window.dmCurrentUser=role;sessionStorage.setItem('dmCurrentUser',role);a$('authOverlay').classList.add('hidden');document.body.classList.remove('auth-locked');applyRole();if(typeof initSelects==='function'&&Array.isArray(DATA)&&DATA.length)initSelects();if(typeof window.update==='function')window.update();showEntryNote();window.dmCheckWeeklyReport?.()}
   function logout(){sessionStorage.removeItem('dmCurrentUser');window.dmCurrentUser='';currentUser=null;const sellerSelect=a$('vendedor');if(sellerSelect)sellerSelect.disabled=false;a$('authPassword').value='';a$('authError').textContent='';a$('authOverlay').classList.remove('hidden');document.body.classList.add('auth-locked')}
-  function boot(){insertLogin();insertSessionControls();insertAdminTab();const saved=sessionStorage.getItem('dmCurrentUser');if(saved&&AUTH_USERS[saved]){currentUser=saved;a$('authOverlay').classList.add('hidden');document.body.classList.remove('auth-locked');applyRole()}}
+  function boot(){insertLogin();insertSessionControls();insertAdminTab();insertWeeklyReportTab();const saved=sessionStorage.getItem('dmCurrentUser');if(saved&&AUTH_USERS[saved]){currentUser=saved;a$('authOverlay').classList.add('hidden');document.body.classList.remove('auth-locked');applyRole();window.dmCheckWeeklyReport?.()}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
@@ -2372,7 +2664,40 @@ function renderReport(){ensureReports();const root=R('reportPreview');if(!root)r
 function exportReportPdf(){
  renderReport();const preview=R('reportPreview');if(!preview)return;const type=R('reportType')?.value||'daily',win=window.open('','_blank');if(!win){alert('Permita janelas pop-up para exportar o PDF.');return}
  const css=`*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#0b1533;font-size:9px}.page{padding:6mm 7mm}.rp-head{display:flex;justify-content:space-between;border-bottom:2px solid #0657ff;padding-bottom:5px;margin-bottom:6px}.rp-title{font-size:18px;font-weight:900}.rp-sub{font-size:8px;color:#64748b;line-height:1.35}.rp-logo{width:95px;max-height:38px;object-fit:contain}.rp-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:6px}.rp-kpi{border:1px solid #dbe3ef;border-radius:5px;padding:5px;background:#f8fbff}.rp-kpi span{display:block;font-size:7px;text-transform:uppercase;color:#64748b;font-weight:bold}.rp-kpi b{font-size:12px}.rp-grid{display:grid;grid-template-columns:1.55fr .85fr;gap:6px}.rp-chart{height:205px;border:1px solid #dbe3ef;border-radius:5px;padding:3px}.rp-chart svg{width:100%;height:100%}.rp-box{border:1px solid #dbe3ef;border-radius:5px;padding:5px;overflow:hidden}.rp-box h3,h3{font-size:10px;margin:0 0 4px}.rp-tables{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{padding:2.6px 3px;border-bottom:1px solid #e2e8f0;font-size:7.4px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}th{font-size:6.6px;text-transform:uppercase;color:#64748b;text-align:left}.num{text-align:right}.rp-foot{text-align:right;font-size:6.5px;color:#64748b;font-weight:bold;margin-top:4px}@page{size:A4 landscape;margin:0}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`;
- win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${rEsc(reportTitle(type))}</title><style>${css}</style></head><body><div class="page">${preview.innerHTML}</div><script>window.onload=()=>setTimeout(()=>window.print(),650)<\/script>
+ win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${rEsc(reportTitle(type))}</title><style>${css}</style>
+<style id="mobile-fix-overrides">
+@media (max-width:1024px){
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:420px!important}
+.catalog-sidebar{position:static!important;max-height:none!important}
+.catalog-shell{grid-template-columns:1fr!important}
+}
+@media (max-width:768px){
+body{overflow-x:hidden}
+.head{flex-direction:column;align-items:flex-start}
+.brand{flex-wrap:wrap}
+.upload{grid-template-columns:1fr!important}
+.filters{grid-template-columns:1fr!important}
+.cards{grid-template-columns:1fr!important}
+.tables{grid-template-columns:1fr!important}
+.grid.two,.commercial-secondary-grid,.dm-product-grid{grid-template-columns:1fr!important}
+.calendar-day{min-height:90px}
+.drawer{width:100vw}
+.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
+#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
+#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
+#tab-produto .dm-product-chart,#commercialCompareChart,#commercialAreaChart,#commercialPortugalMap{
+height:340px!important;padding:8px}
+svg text{font-size:10px!important}
+.logo{width:110px}
+h1{font-size:24px}
+}
+</style>
+
+</head><body><div class="page">${preview.innerHTML}</div><script>window.onload=()=>setTimeout(()=>window.print(),650)<\/script>
 
 </body></html>`);win.document.close();
 }
@@ -3195,6 +3520,270 @@ function install(){
  document.addEventListener('click',e=>{if(e.target.closest('#catalogList .catalog-item,#catalogPrev,#catalogNext'))setTimeout(renderConfig,30)});setTimeout(()=>{refreshCascade();renderConfig()},100);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script>
+
+
+
+
+<!-- DM_INTRO_ASSISTENCIA_V2 -->
+<style id="dmIntroAssistanceStyles">
+#dmIntroOverlay{position:fixed;inset:0;z-index:1000000;background:radial-gradient(circle at 50% 40%,rgba(6,87,255,.30),transparent 30%),linear-gradient(145deg,#020617 0%,#071a3d 55%,#0647bd 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-family:Inter,Segoe UI,Arial,sans-serif;overflow:hidden;transition:opacity .8s ease,visibility .8s ease}
+#dmIntroOverlay.dm-intro-hidden{opacity:0;visibility:hidden;pointer-events:none}
+#dmIntroOverlay:before,#dmIntroOverlay:after{content:"";position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.14);animation:dmIntroOrbit 14s linear infinite}
+#dmIntroOverlay:before{width:430px;height:430px;box-shadow:0 0 90px rgba(41,121,255,.25)}
+#dmIntroOverlay:after{width:700px;height:700px;animation-direction:reverse;animation-duration:20s}
+.dm-intro-particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.dm-intro-particles i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;opacity:.28;animation:dmFloat 7s linear infinite}
+.dm-intro-stage{position:relative;z-index:2;text-align:center;width:min(920px,92vw);padding:34px}
+.dm-intro-logo{width:min(310px,66vw);max-height:160px;object-fit:contain;background:#fff;border-radius:24px;padding:18px;box-shadow:0 0 80px rgba(44,122,255,.72);opacity:0;transform:scale(.82) translateY(12px);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
+.dm-intro-logo.show{opacity:1;transform:scale(1) translateY(0)}
+.dm-intro-title{font-size:clamp(38px,7vw,78px);font-weight:950;letter-spacing:.10em;margin-top:24px;opacity:0;transform:translateY(18px);transition:.8s ease}
+.dm-intro-title.show{opacity:1;transform:none}
+.dm-intro-status{font-size:clamp(15px,2.3vw,22px);font-weight:750;margin-top:24px;opacity:0;transform:translateY(10px);transition:.45s ease;color:#dce9ff;min-height:28px}
+.dm-intro-status.show{opacity:1;transform:none}
+.dm-intro-progress{width:min(500px,80vw);height:9px;margin:18px auto 0;background:rgba(255,255,255,.16);border-radius:999px;overflow:hidden;opacity:0;transition:.45s}
+.dm-intro-progress.show{opacity:1}.dm-intro-progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#fff,#7fb2ff);border-radius:inherit;box-shadow:0 0 18px #fff;transition:width .75s ease}
+.dm-intro-percent{font-size:12px;font-weight:900;letter-spacing:.08em;margin-top:9px;opacity:0;color:#d9e7ff}
+.dm-intro-percent.show{opacity:1}
+.dm-intro-welcome{font-size:clamp(23px,4vw,42px);font-weight:900;margin-top:24px;opacity:0;transform:translateY(12px);transition:.8s ease}
+.dm-intro-welcome.show{opacity:1;transform:none}
+.dm-intro-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22;display:none}
+.dm-intro-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,6,23,.46),rgba(2,6,23,.76));display:none}
+.dm-intro-skip{position:absolute;right:22px;bottom:22px;z-index:3;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);color:#fff;padding:11px 15px;border-radius:12px;font-weight:850;backdrop-filter:blur(8px)}.dm-intro-sound{position:absolute;left:22px;bottom:22px;z-index:3;background:#fff;color:#073b9a;border:0;padding:11px 15px;border-radius:12px;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+@keyframes dmIntroOrbit{to{transform:rotate(360deg)}}
+@keyframes dmFloat{0%{transform:translateY(20px);opacity:0}15%{opacity:.35}100%{transform:translateY(-110vh);opacity:0}}
+.dm-intro-admin{margin-top:26px;border-top:1px solid var(--line);padding-top:22px}
+.dm-intro-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}
+.dm-intro-admin-card{border:1px solid var(--line);border-radius:16px;padding:15px;background:linear-gradient(135deg,#fff,#f8fbff)}
+.dm-intro-switch{display:flex;align-items:center;justify-content:space-between;gap:12px;text-transform:none;letter-spacing:0;font-size:14px;color:var(--ink);margin:0}
+.dm-intro-switch input{width:auto}
+.dm-intro-video-list{display:grid;gap:8px;margin-top:10px}
+.dm-intro-video-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:9px;background:#fff}
+.dm-intro-video-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:800}
+.dm-intro-video-row button{padding:7px 9px;font-size:11px}
+.dm-intro-video-row button.danger{background:#fee2e2;color:#991b1b}
+.dm-intro-admin-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.dm-intro-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:10px}
+@media(max-width:760px){.dm-intro-admin-grid{grid-template-columns:1fr}.dm-intro-video-row{grid-template-columns:auto minmax(0,1fr) auto}.dm-intro-video-row .dm-remove-video{grid-column:2/-1}}
+</style>
+
+<script id="dmIntroAssistanceScript">
+(function(){
+'use strict';
+const CFG_KEY='dmPortalIntroConfigV2';
+const SESSION_KEY='dmPortalIntroShownV2';
+const DEFAULTS={enabled:true,mode:'session',music:true,volume:.22,showLogo:true,showConnecting:true,showWelcome:true,activeVideo:'',videos:[]};
+let timers=[],audioCtx=null,masterGain=null,audioSource=null;
+const $=id=>document.getElementById(id);
+function loadCfg(){try{const r=JSON.parse(localStorage.getItem(CFG_KEY)||'{}');const c=Object.assign({},DEFAULTS,r);c.videos=Array.isArray(r.videos)?r.videos:[];return c}catch(e){return Object.assign({},DEFAULTS,{videos:[]})}}
+function saveCfg(c){localStorage.setItem(CFG_KEY,JSON.stringify(c))}
+function later(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id}
+function clearTimers(){timers.forEach(clearTimeout);timers=[]}
+function startMusic(cfg){
+  if(!cfg.music)return false;
+  try{
+    if(audioCtx){
+      if(audioCtx.state==='suspended')audioCtx.resume();
+      return true;
+    }
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx)return false;
+    audioCtx=new AudioCtx();
+    masterGain=audioCtx.createGain();
+    const vol=Math.max(0,Math.min(.5,Number(cfg.volume)||.22));
+    masterGain.gain.setValueAtTime(vol,audioCtx.currentTime);
+    masterGain.connect(audioCtx.destination);
+
+    /* Som sintetizado diretamente no HTML: pulsos 1-bit inspirados no
+       carregamento de cassetes do ZX Spectrum 48K, sem MP3/WAV externo. */
+    const duration=8.15,sr=audioCtx.sampleRate,total=Math.floor(duration*sr);
+    const buffer=audioCtx.createBuffer(1,total,sr),data=buffer.getChannelData(0);
+    let phase=0,lfsr=0xACE1;
+    for(let i=0;i<total;i++){
+      const t=i/sr;
+      let freq,amp;
+      if(t<1.25){freq=780; amp=.42;}                 // tom piloto grave
+      else if(t<2.35){freq=1560; amp=.48;}           // tom piloto agudo
+      else if(t<6.75){                               // blocos rápidos de dados
+        const block=Math.floor((t-2.35)*11);
+        freq=(block%5===0)?650:(block%2?2050:1180);
+        amp=.52;
+      }else{freq=900+Math.floor((t-6.75)*8)%2*1050;amp=.44;}
+      phase+=freq/sr;
+      const square=(phase%1)<.5?1:-1;
+      lfsr=(lfsr>>1)^((-(lfsr&1))&0xB400);
+      const noise=((lfsr&255)/127.5-1)*.13;
+      const gate=(Math.floor(t*22)%9===0 && t>2.35)?0.18:1;
+      const fade=Math.min(1,t/.035,(duration-t)/.18);
+      data[i]=(square+noise)*amp*gate*Math.max(0,fade);
+    }
+    audioSource=audioCtx.createBufferSource();
+    audioSource.buffer=buffer;
+    audioSource.connect(masterGain);
+    audioSource.start();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    return true;
+  }catch(e){return false}
+}
+function stopMusic(){
+  try{
+    if(masterGain&&audioCtx){
+      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      masterGain.gain.setValueAtTime(masterGain.gain.value,audioCtx.currentTime);
+      masterGain.gain.linearRampToValueAtTime(0,audioCtx.currentTime+.12);
+    }
+    setTimeout(()=>{
+      try{if(audioSource)audioSource.stop()}catch(e){}
+      audioSource=null;
+      if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}
+      masterGain=null;
+    },150);
+  }catch(e){}
+}
+function finish(overlay,remember){clearTimers();stopMusic();if(remember)sessionStorage.setItem(SESSION_KEY,'1');overlay.classList.add('dm-intro-hidden');setTimeout(()=>overlay.remove(),850)}
+function logoSource(){return document.querySelector('header .logo')?.getAttribute('src')||'logo/dm-logo.png'}
+function showIntro(force){
+  const cfg=loadCfg();if(!force){if(!cfg.enabled||cfg.mode==='never')return;if(cfg.mode==='session'&&sessionStorage.getItem(SESSION_KEY))return}
+  const old=$('dmIntroOverlay');if(old)old.remove();clearTimers();
+  const overlay=document.createElement('div');overlay.id='dmIntroOverlay';
+  const particles=Array.from({length:28},(_,i)=>'<i style="left:'+(Math.random()*100)+'%;top:'+(70+Math.random()*30)+'%;animation-delay:'+(-Math.random()*7)+'s;animation-duration:'+(5+Math.random()*5)+'s"></i>').join('');
+  overlay.innerHTML='<video id="dmIntroVideo" class="dm-intro-video" playsinline muted></video><div id="dmIntroShade" class="dm-intro-shade"></div><div class="dm-intro-particles">'+particles+'</div><div class="dm-intro-stage"><img id="dmIntroLogo" class="dm-intro-logo" alt="DM"><div id="dmIntroTitle" class="dm-intro-title">PORTAL DM</div><div id="dmIntroStatus" class="dm-intro-status"></div><div id="dmIntroProgress" class="dm-intro-progress"><i></i></div><div id="dmIntroPercent" class="dm-intro-percent">0%</div><div id="dmIntroWelcome" class="dm-intro-welcome">Bem-vindo ao Portal DM</div></div><button id="dmIntroSound" class="dm-intro-sound" type="button">🔊 Ativar som de loading</button><button id="dmIntroSkip" class="dm-intro-skip" type="button">Saltar introdução</button>';
+  document.body.appendChild(overlay);
+  const logo=$('dmIntroLogo'),title=$('dmIntroTitle'),status=$('dmIntroStatus'),progress=$('dmIntroProgress'),bar=progress.querySelector('i'),percent=$('dmIntroPercent'),welcome=$('dmIntroWelcome'),video=$('dmIntroVideo'),shade=$('dmIntroShade');
+  logo.src=logoSource();
+  if(cfg.activeVideo){video.src=cfg.activeVideo;video.style.display='block';shade.style.display='block';video.muted=true;video.play().catch(()=>{})}
+  $('dmIntroSkip').onclick=()=>finish(overlay,!force);
+  const soundBtn=$('dmIntroSound');
+  if(!cfg.music){soundBtn.style.display='none'}
+  soundBtn.onclick=async()=>{
+    startMusic(cfg);
+    try{if(audioCtx&&audioCtx.state==='suspended')await audioCtx.resume()}catch(e){}
+    soundBtn.textContent='✓ Som de loading ativo';
+    soundBtn.disabled=true;
+    later(()=>soundBtn.style.opacity='.35',900);
+  };
+  startMusic(cfg);
+  later(()=>{
+    if(audioCtx&&audioCtx.state==='running'){
+      soundBtn.textContent='✓ Som de loading ativo';
+      soundBtn.disabled=true;
+      soundBtn.style.opacity='.35';
+    }
+  },500);
+  later(()=>{if(cfg.showLogo)logo.classList.add('show')},250);
+  later(()=>title.classList.add('show'),1000);
+  later(()=>{status.classList.add('show');progress.classList.add('show');percent.classList.add('show')},1550);
+  const steps=[
+    ['A carregar módulos...',18,1900],
+    ['A ligar à base de dados...',42,2850],
+    ['A carregar catálogo...',68,3800],
+    ['A sincronizar informação...',86,4750],
+    ['Portal pronto',100,5650]
+  ];
+  steps.forEach(([msg,pct,ms])=>later(()=>{status.textContent=msg;bar.style.width=pct+'%';percent.textContent=pct+'%'},ms));
+  later(()=>{status.classList.remove('show');progress.classList.remove('show');percent.classList.remove('show');if(cfg.showWelcome)welcome.classList.add('show')},6550);
+  later(()=>finish(overlay,!force),8200);
+}
+function isAssistance(){return window.dmCurrentUser==='assistencia'||sessionStorage.getItem('dmCurrentUser')==='assistencia'}
+function buildAdminPanel(){
+  if($('dmIntroAdminPanel'))return;const target=$('tab-admin-pref');if(!target)return;const host=target.querySelector('.panel')||target;
+  const panel=document.createElement('div');panel.id='dmIntroAdminPanel';panel.className='dm-intro-admin assistance-only';
+  panel.innerHTML='<h2>Introdução do Portal DM</h2><div class="smallnote">Configuração reservada ao utilizador Assistência.</div><div class="dm-intro-admin-grid"><div class="dm-intro-admin-card"><label class="dm-intro-switch"><span>Ativar introdução</span><input id="dmIntroEnabled" type="checkbox"></label><label style="margin-top:14px">Modo de apresentação</label><select id="dmIntroMode"><option value="session">Uma vez por sessão</option><option value="always">Sempre</option><option value="never">Nunca</option></select><label class="dm-intro-switch" style="margin-top:14px"><span>Som de loading ZX Spectrum</span><input id="dmIntroMusic" type="checkbox"></label><label style="margin-top:14px">Volume</label><input id="dmIntroVolume" type="range" min="0" max=".5" step=".01"></div><div class="dm-intro-admin-card"><label class="dm-intro-switch"><span>Mostrar logótipo DM</span><input id="dmIntroShowLogo" type="checkbox"></label><label class="dm-intro-switch" style="margin-top:12px"><span>Mostrar ligação e progresso</span><input id="dmIntroShowConnecting" type="checkbox"></label><label class="dm-intro-switch" style="margin-top:12px"><span>Mostrar boas-vindas</span><input id="dmIntroShowWelcome" type="checkbox"></label><label style="margin-top:14px">Adicionar vídeo da pasta videos/</label><div style="display:flex;gap:8px"><input id="dmIntroVideoName" type="text" placeholder="ex.: intro.mp4"><button id="dmIntroAddVideo" type="button">Adicionar</button></div></div></div><div id="dmIntroVideoList" class="dm-intro-video-list"></div><div class="dm-intro-admin-actions"><button id="dmIntroTest" type="button">▶ Testar introdução</button><button id="dmIntroResetSession" class="secondary" type="button">Repor nesta sessão</button><button id="dmIntroSave" class="accent" type="button">Guardar</button></div>';
+  host.appendChild(panel);
+  $('dmIntroAddVideo').onclick=addVideo;$('dmIntroSave').onclick=saveFromPanel;$('dmIntroTest').onclick=()=>showIntro(true);$('dmIntroResetSession').onclick=()=>{sessionStorage.removeItem(SESSION_KEY);alert('A introdução voltará a aparecer ao recarregar.')};renderPanel();
+}
+function renderPanel(){
+  if(!$('dmIntroAdminPanel'))return;const c=loadCfg();
+  $('dmIntroEnabled').checked=!!c.enabled;$('dmIntroMode').value=c.mode;$('dmIntroMusic').checked=!!c.music;$('dmIntroVolume').value=c.volume;$('dmIntroShowLogo').checked=!!c.showLogo;$('dmIntroShowConnecting').checked=!!c.showConnecting;$('dmIntroShowWelcome').checked=!!c.showWelcome;
+  const list=$('dmIntroVideoList');list.innerHTML=c.videos.length?c.videos.map((v,i)=>'<div class="dm-intro-video-row"><input type="radio" name="dmActiveVideo" value="'+i+'" '+(c.activeVideo===v.path?'checked':'')+'><span>'+v.name+'</span><button type="button" data-preview="'+i+'">Testar</button><button type="button" class="danger dm-remove-video" data-remove="'+i+'">Desativar</button></div>').join(''):'<div class="dm-intro-note">Sem vídeo configurado. A animação e o som de loading funcionam na mesma.</div>';
+  list.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{const v=c.videos[+b.dataset.preview];if(v){const t=loadCfg();t.activeVideo=v.path;saveCfg(t);showIntro(true)}});list.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{const i=+b.dataset.remove,cfg=loadCfg(),r=cfg.videos.splice(i,1)[0];if(r&&cfg.activeVideo===r.path)cfg.activeVideo='';saveCfg(cfg);renderPanel()});
+}
+function addVideo(){const input=$('dmIntroVideoName');let name=(input.value||'').trim();if(!name)return alert('Indique o nome do vídeo.');name=name.replace(/^videos[\\/]/i,'');if(!/\.(mp4|webm|ogg)$/i.test(name))return alert('Use MP4, WebM ou OGG.');const c=loadCfg(),path='videos/'+name;if(!c.videos.some(v=>v.path===path))c.videos.push({name,path});if(!c.activeVideo)c.activeVideo=path;saveCfg(c);input.value='';renderPanel()}
+function saveFromPanel(){if(!isAssistance())return alert('Apenas Assistência pode alterar esta configuração.');const c=loadCfg();c.enabled=$('dmIntroEnabled').checked;c.mode=$('dmIntroMode').value;c.music=$('dmIntroMusic').checked;c.volume=+$('dmIntroVolume').value;c.showLogo=$('dmIntroShowLogo').checked;c.showConnecting=$('dmIntroShowConnecting').checked;c.showWelcome=$('dmIntroShowWelcome').checked;const s=document.querySelector('input[name="dmActiveVideo"]:checked');c.activeVideo=s?c.videos[+s.value]?.path||'':'';saveCfg(c);alert('Configuração guardada.')}
+function bootAdmin(){let n=0;const id=setInterval(()=>{n++;buildAdminPanel();if($('dmIntroAdminPanel')||n>40)clearInterval(id)},250)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{showIntro(false);bootAdmin()},{once:true});else{showIntro(false);bootAdmin()}
+window.dmPortalIntro={show:()=>showIntro(true),config:()=>loadCfg()};
+})();
+</script>
+
+
+
+<style id="dmSimpleManagementKpisStyles">
+  #dmManagementApp .dm-mgmt-body{max-width:1180px}
+  #dmMgmtContent.dm-simple-management{display:block}
+  .dm-admin-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(210px,1fr));gap:16px;margin-top:6px}
+  .dm-admin-kpi{appearance:none;width:100%;min-height:170px;text-align:left;padding:24px;border:1px solid #dce4f0;border-radius:20px;background:linear-gradient(135deg,#fff 0%,#f6f9ff 100%);color:#132238;box-shadow:0 12px 32px rgba(15,23,42,.08);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;position:relative;overflow:hidden}
+  .dm-admin-kpi:before{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-38px;top:-42px;background:linear-gradient(135deg,rgba(11,99,246,.17),rgba(39,167,239,.08))}
+  .dm-admin-kpi:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(15,23,42,.13);border-color:#a9c4ee}
+  .dm-admin-kpi:focus-visible{outline:3px solid rgba(11,99,246,.28);outline-offset:3px}
+  .dm-admin-kpi-label{display:block;font-size:13px;line-height:1.35;text-transform:uppercase;letter-spacing:.055em;color:#64748b;font-weight:900;max-width:85%}
+  .dm-admin-kpi-value{display:block;font-size:46px;line-height:1;font-weight:950;color:#0b3f8f;margin-top:22px;letter-spacing:-.045em}
+  .dm-admin-kpi-hint{display:block;font-size:12px;color:#64748b;margin-top:13px;font-weight:700}
+  .dm-admin-kpi.machine{border-left:6px solid #0b63f6}.dm-admin-kpi.valve{border-left:6px solid #20a468}.dm-admin-kpi.clients{border-left:6px solid #7c3aed}.dm-admin-kpi.lift{border-left:6px solid #f59e0b}.dm-admin-kpi.diag{border-left:6px solid #06b6d4}.dm-admin-kpi.retail{border-left:6px solid #ef2f78}.dm-admin-kpi.service{border-left:6px solid #64748b}
+  .dm-admin-intro{margin:0 0 16px}.dm-admin-intro h2{margin:0 0 5px;font-size:22px;color:#082d67}.dm-admin-intro p{margin:0;color:#64748b;font-size:13px}
+  .dm-kpi-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.36);z-index:100020;opacity:0;pointer-events:none;transition:.2s}
+  .dm-kpi-backdrop.open{opacity:1;pointer-events:auto}
+  .dm-kpi-drawer{position:fixed;top:0;right:0;width:min(620px,96vw);height:100vh;background:#fff;z-index:100021;box-shadow:-24px 0 60px rgba(15,23,42,.26);transform:translateX(105%);transition:.24s ease;display:flex;flex-direction:column}
+  .dm-kpi-drawer.open{transform:translateX(0)}
+  .dm-kpi-drawer-head{padding:22px 24px;background:linear-gradient(135deg,#071f49,#0b63f6);color:#fff;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+  .dm-kpi-drawer-title{font-size:21px;font-weight:950;line-height:1.2}.dm-kpi-drawer-sub{font-size:12px;opacity:.85;margin-top:6px}
+  .dm-kpi-drawer-close{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25)}
+  .dm-kpi-drawer-body{padding:18px 20px 30px;overflow:auto}
+  .dm-kpi-client-list{border:1px solid #dce4f0;border-radius:14px;overflow:hidden}
+  .dm-kpi-client-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 14px;border-bottom:1px solid #edf1f6;font-size:13px}
+  .dm-kpi-client-row:last-child{border-bottom:0}.dm-kpi-client-row b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dm-kpi-client-row span{font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dm-kpi-empty{padding:32px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:14px}
+  @media(max-width:1100px){.dm-admin-kpi-grid{grid-template-columns:repeat(2,minmax(220px,1fr))}}
+  @media(max-width:700px){.dm-admin-kpi-grid{grid-template-columns:1fr}.dm-admin-kpi{min-height:145px}.dm-admin-kpi-value{font-size:40px}}
+  @media(max-width:600px){.dm-kpi-drawer{width:100vw}.dm-admin-kpi{padding:20px}}
+</style>
+<div id="dmKpiBackdrop" class="dm-kpi-backdrop"></div>
+<aside id="dmKpiDrawer" class="dm-kpi-drawer" aria-hidden="true">
+  <div class="dm-kpi-drawer-head">
+    <div><div id="dmKpiDrawerTitle" class="dm-kpi-drawer-title">Clientes</div><div id="dmKpiDrawerSub" class="dm-kpi-drawer-sub"></div></div>
+    <button id="dmKpiDrawerClose" type="button" class="dm-kpi-drawer-close">Fechar</button>
+  </div>
+  <div id="dmKpiDrawerBody" class="dm-kpi-drawer-body"></div>
+</aside>
+<script id="dmSimpleManagementKpisScript">
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/\s+/g,' ').trim();
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money=v=>new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(v)||0);
+  const integer=v=>new Intl.NumberFormat('pt-PT',{maximumFractionDigits:0}).format(Number(v)||0);
+  function allRows(){try{const a=eval('DATA');return Array.isArray(a)?a:[]}catch(_){return Array.isArray(window.DATA)?window.DATA:[]}}
+  function selectedRows(){let a=allRows();const y=$('dmMgmtYear')?.value||'',m=$('dmMgmtMonth')?.value||'',s=norm($('dmMgmtSeller')?.value||'');if(y)a=a.filter(r=>String(r.ano)===y);if(m)a=a.filter(r=>String(r.mes)===m);if(s)a=a.filter(r=>norm(r.vendedor)===s);return a}
+  const field=(r,name)=>norm(r[name]??r[name.replace('_',' ')]??'');
+  const productText=r=>norm([r.artigo,r.descricao,r.artigo_desc,r.grupo,r.familia,r.subfamilia,r.area].join(' '));
+  const categories=[
+    {id:'all',label:'Total de clientes',hint:'Todos os clientes únicos',cls:'clients',test:null},
+    {id:'align',label:'Máquinas de alinhar',hint:'Grupo: Máquinas de Alinhar',cls:'machine',test:r=>field(r,'grupo')==='MAQUINAS DE ALINHAR'},
+    {id:'balance',label:'Máquinas de equilibrar',hint:'Grupo: Máquinas de Equilibrar',cls:'machine',test:r=>field(r,'grupo')==='MAQUINAS DE EQUILIBRAR'},
+    {id:'tyrechanger',label:'Máquinas de desmontar',hint:'Grupo: Máquinas de Desmontar',cls:'machine',test:r=>field(r,'grupo')==='MAQUINAS DE DESMONTAR'},
+    {id:'lifts',label:'Elevadores',hint:'Tesoura, colunas e elevadores',cls:'lift',test:r=>field(r,'grupo').includes('ELEVADOR')},
+    {id:'diagnostics',label:'Equipamento de diagnóstico',hint:'Diagnóstico e equipamentos associados',cls:'diag',test:r=>field(r,'grupo').includes('DIAGNOSTICO')||field(r,'familia').includes('DIAGNOSTICO')},
+    {id:'spare',label:'Pneu suplente',hint:'Grupo: Pneu Suplente',cls:'retail',test:r=>field(r,'grupo')==='PNEU SUPLENTE'},
+    {id:'valves',label:'Válvulas',hint:'Família, descrição ou TPMS',cls:'valve',test:r=>{const t=productText(r);return t.includes('VALVULA')||t.includes('TPMS')}},
+    {id:'consumables',label:'Consumíveis',hint:'Consumíveis gerais e Hofmann',cls:'retail',test:r=>field(r,'grupo').includes('CONSUMIVE')},
+    {id:'tools',label:'Ferramentas',hint:'Grupo: Ferramentas',cls:'retail',test:r=>field(r,'grupo')==='FERRAMENTAS'},
+    {id:'rims',label:'Jantes',hint:'Grupo: Jantes',cls:'retail',test:r=>field(r,'grupo')==='JANTES'},
+    {id:'service',label:'Assistência técnica',hint:'Área de negócio: Ass. Técnica',cls:'service',test:r=>field(r,'area')==='ASS.TECNICA'||field(r,'area_de_negocio')==='ASS.TECNICA'}
+  ];
+  function clientsFor(rows,predicate){const map=new Map();rows.filter(predicate||(()=>true)).forEach(r=>{const key=norm(r.cliente);if(!key||key==='N/D')return;if(!map.has(key))map.set(key,{name:String(r.cliente||key).trim(),value:0});map.get(key).value+=Number(r.valor_liquido)||0});return [...map.values()].sort((a,b)=>b.value-a.value||a.name.localeCompare(b.name,'pt'))}
+  function category(id){return categories.find(c=>c.id===id)||categories[0]}
+  function renderSimple(){const root=$('dmMgmtContent');if(!root||!$('dmManagementApp')?.classList.contains('open'))return;const rows=selectedRows();root.className='dm-simple-management';root.innerHTML='<div class="dm-admin-intro"><h2>Indicadores por produto</h2><p>Clique num KPI para consultar apenas os clientes e a respetiva faturação sem IVA.</p></div><div class="dm-admin-kpi-grid">'+categories.map(c=>{const count=clientsFor(rows,c.test).length;return '<button type="button" class="dm-admin-kpi '+c.cls+'" data-dm-kpi="'+c.id+'"><span class="dm-admin-kpi-label">Clientes — '+c.label+'</span><strong class="dm-admin-kpi-value">'+integer(count)+'</strong><span class="dm-admin-kpi-hint">'+c.hint+'</span></button>'}).join('')+'</div>';root.dataset.dmSimple='1'}
+  function openDrawer(type){const rows=selectedRows(),c=category(type),list=clientsFor(rows,c.test);$('dmKpiDrawerTitle').textContent='Clientes — '+c.label;$('dmKpiDrawerSub').textContent=integer(list.length)+' clientes · faturação sem IVA';$('dmKpiDrawerBody').innerHTML=list.length?'<div class="dm-kpi-client-list">'+list.map(x=>'<div class="dm-kpi-client-row"><b>'+esc(x.name)+'</b><span>'+money(x.value)+'</span></div>').join('')+'</div>':'<div class="dm-kpi-empty">Sem clientes para os filtros selecionados.</div>';$('dmKpiBackdrop').classList.add('open');$('dmKpiDrawer').classList.add('open');$('dmKpiDrawer').setAttribute('aria-hidden','false')}
+  function closeDrawer(){$('dmKpiBackdrop').classList.remove('open');$('dmKpiDrawer').classList.remove('open');$('dmKpiDrawer').setAttribute('aria-hidden','true')}
+  document.addEventListener('click',e=>{const k=e.target.closest('[data-dm-kpi]');if(k){e.preventDefault();openDrawer(k.dataset.dmKpi)}});
+  $('dmKpiDrawerClose').addEventListener('click',closeDrawer);$('dmKpiBackdrop').addEventListener('click',closeDrawer);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
+  const observer=new MutationObserver(()=>{const root=$('dmMgmtContent');if($('dmManagementApp')?.classList.contains('open')&&root&&!root.dataset.dmSimple)setTimeout(renderSimple,0)});
+  observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+  ['dmMgmtYear','dmMgmtMonth','dmMgmtSeller'].forEach(id=>document.addEventListener('change',e=>{if(e.target?.id===id)setTimeout(renderSimple,0)}));
+  setInterval(()=>{if($('dmManagementApp')?.classList.contains('open')){const root=$('dmMgmtContent');if(root&&!root.dataset.dmSimple)renderSimple()}},500);
 })();
 </script>
 
