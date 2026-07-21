@@ -1688,7 +1688,7 @@
     },
     {
       "codigo": "13-09111",
-      "foto": false,
+      "foto": true,
       "pdf": false
     },
     {
@@ -3023,7 +3023,7 @@
     },
     {
       "codigo": "13-1010601707XX",
-      "foto": false,
+      "foto": true,
       "pdf": false
     },
     {

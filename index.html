@@ -793,7 +793,8 @@ async function parseFile(file){
  DATA=rows.map(rowToData).filter(r=>r.ano||r.valor_liquido||r.valor_total);
  if(!DATA.length) throw new Error('Foram lidas '+rows.length+' linhas, mas não foram encontradas colunas de Ano ou Valor Líquido. Verifique os cabeçalhos.');
  buildMeta(); initTabs(); initSelects(); update();
- setTimeout(()=>{ if(DATA && DATA.length) update(); },80);
+ window.dmRefreshReportWeeks?.();
+ setTimeout(()=>{ if(DATA && DATA.length){ update(); window.dmRefreshReportWeeks?.(); } },80);
  $('footer').innerHTML='&copy; Desenvolvido By Domingos &amp; Morgado';
  $('status').textContent=`Ficheiro carregado: ${file.name}. ${fileHandle?'Auto-refresh direto ativo.':'Pode usar “Atualizar agora” para reler o ficheiro selecionado.'}`;
 }
@@ -2038,19 +2039,9 @@ h1{font-size:24px}
     const tabs=document.querySelector('.tabs'),main=document.querySelector('main');if(!tabs||!main)return;
     const btn=document.createElement('button');btn.className='tab-btn weekly-report-access';btn.type='button';btn.dataset.tab='tab-weekly-report';btn.textContent='Relatório semanal';tabs.appendChild(btn);
     const section=document.createElement('section');section.id='tab-weekly-report';section.className='tab-panel weekly-report-access';section.innerHTML=`
-      <div class="grid"><div class="panel wide">
-        <h2>Relatório semanal</h2>
-        <div class="smallnote">Relatório da última semana concluída, de segunda-feira a domingo.</div>
-        <div id="weeklyReportOwnSelector" class="filter" style="max-width:420px;margin-top:16px"><label>Relatório do utilizador</label><select id="weeklyReportOwnUser"><option value="administrador">Administrador — todos</option><option value="rui_ferreira">Rui Ferreira</option><option value="joao_rebelo">João Rebelo</option><option value="sandro_loureiro">Sandro Loureiro</option></select></div>
-        <div class="admin-pref-actions"><button id="weeklyReportOwnOpen" class="accent" type="button">Abrir relatório semanal</button></div>
-        <div class="smallnote" style="margin-top:14px">Quando o automatismo está ativo, o relatório também é apresentado automaticamente no primeiro acesso após o fim da semana.</div>
-      </div></div>`;
+      <div id="weeklyReportEmbeddedHost"></div>`;
     const footer=main.querySelector('.footer');footer?main.insertBefore(section,footer):main.appendChild(section);
-    btn.addEventListener('click',()=>activateTab('tab-weekly-report'));
-    a$('weeklyReportOwnOpen').onclick=()=>{
-      const requested=currentUser==='assistencia'?(a$('weeklyReportOwnUser')?.value||'administrador'):currentUser;
-      showWeeklyReport(true,requested);
-    };
+    btn.addEventListener('click',()=>{activateTab('tab-weekly-report');setTimeout(()=>window.dmRefreshReportWeeks?.(),30)});
   }
 
   let entryNoteImageData='';
@@ -2529,33 +2520,33 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 
 <style id="dmReportsStyles">
-#tab-relatorios .report-toolbar{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;align-items:end;margin-bottom:20px}
-#tab-relatorios .report-actions{grid-column:span 2}
-#tab-relatorios .report-search-input{font-size:14px;padding:11px 12px}
-#tab-relatorios .report-toolbar .filter{box-shadow:none;border-radius:14px;padding:13px}
-#tab-relatorios .report-actions{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
-#tab-relatorios .report-preview{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:30px;min-height:820px;font-size:15px}
-#tab-relatorios .rp-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:3px solid var(--accent);padding-bottom:16px;margin-bottom:18px}
-#tab-relatorios .rp-title{font-size:30px;font-weight:950;letter-spacing:-.04em}
-#tab-relatorios .rp-sub{font-size:14px;color:var(--muted);margin-top:7px;line-height:1.5}
-#tab-relatorios .rp-logo{width:145px;max-height:62px;object-fit:contain}
-#tab-relatorios .rp-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
-#tab-relatorios .rp-kpi{border:1px solid var(--line);border-radius:14px;padding:14px;background:#f8fbff}
-#tab-relatorios .rp-kpi span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:900}
-#tab-relatorios .rp-kpi b{display:block;font-size:23px;margin-top:6px}
-#tab-relatorios .rp-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,.8fr);gap:18px}
-#tab-relatorios .rp-chart{height:430px;border:1px solid var(--line);border-radius:15px;padding:10px;overflow:hidden;background:#fff}
-#tab-relatorios .rp-chart svg{width:100%;height:100%}
-#tab-relatorios .rp-box{border:1px solid var(--line);border-radius:15px;padding:14px;overflow:hidden;background:#fff}
-#tab-relatorios .rp-box h3,#tab-relatorios h3{font-size:18px;margin:0 0 10px}
-#tab-relatorios .rp-tables{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
-#tab-relatorios .rp-table table{font-size:13px;table-layout:fixed}
-#tab-relatorios .rp-table th,#tab-relatorios .rp-table td{padding:7px 7px;line-height:1.25}
-#tab-relatorios .rp-table th:first-child,#tab-relatorios .rp-table td:first-child{width:62%}
-#tab-relatorios .rp-foot{text-align:right;font-size:12px;color:var(--muted);font-weight:800;margin-top:14px}
-#tab-relatorios .report-help{font-size:13px;color:var(--muted);margin:-6px 0 16px}
-@media(max-width:1100px){#tab-relatorios .report-toolbar{grid-template-columns:1fr 1fr}#tab-relatorios .rp-kpis{grid-template-columns:repeat(2,1fr)}#tab-relatorios .rp-grid,#tab-relatorios .rp-tables{grid-template-columns:1fr}#tab-relatorios .rp-chart{height:360px}}
-@media(max-width:650px){#tab-relatorios .report-toolbar{grid-template-columns:1fr}#tab-relatorios .rp-kpis{grid-template-columns:1fr 1fr}#tab-relatorios .report-preview{padding:16px;font-size:14px}#tab-relatorios .rp-logo{display:none}#tab-relatorios .rp-title{font-size:24px}}
+#tab-weekly-report .report-toolbar{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;align-items:end;margin-bottom:20px}
+#tab-weekly-report .report-actions{grid-column:span 2}
+#tab-weekly-report .report-search-input{font-size:14px;padding:11px 12px}
+#tab-weekly-report .report-toolbar .filter{box-shadow:none;border-radius:14px;padding:13px}
+#tab-weekly-report .report-actions{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+#tab-weekly-report .report-preview{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:30px;min-height:820px;font-size:15px}
+#tab-weekly-report .rp-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:3px solid var(--accent);padding-bottom:16px;margin-bottom:18px}
+#tab-weekly-report .rp-title{font-size:30px;font-weight:950;letter-spacing:-.04em}
+#tab-weekly-report .rp-sub{font-size:14px;color:var(--muted);margin-top:7px;line-height:1.5}
+#tab-weekly-report .rp-logo{width:145px;max-height:62px;object-fit:contain}
+#tab-weekly-report .rp-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
+#tab-weekly-report .rp-kpi{border:1px solid var(--line);border-radius:14px;padding:14px;background:#f8fbff}
+#tab-weekly-report .rp-kpi span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:900}
+#tab-weekly-report .rp-kpi b{display:block;font-size:23px;margin-top:6px}
+#tab-weekly-report .rp-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(330px,.8fr);gap:18px}
+#tab-weekly-report .rp-chart{height:430px;border:1px solid var(--line);border-radius:15px;padding:10px;overflow:hidden;background:#fff}
+#tab-weekly-report .rp-chart svg{width:100%;height:100%}
+#tab-weekly-report .rp-box{border:1px solid var(--line);border-radius:15px;padding:14px;overflow:hidden;background:#fff}
+#tab-weekly-report .rp-box h3,#tab-weekly-report h3{font-size:18px;margin:0 0 10px}
+#tab-weekly-report .rp-tables{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+#tab-weekly-report .rp-table table{font-size:13px;table-layout:fixed}
+#tab-weekly-report .rp-table th,#tab-weekly-report .rp-table td{padding:7px 7px;line-height:1.25}
+#tab-weekly-report .rp-table th:first-child,#tab-weekly-report .rp-table td:first-child{width:62%}
+#tab-weekly-report .rp-foot{text-align:right;font-size:12px;color:var(--muted);font-weight:800;margin-top:14px}
+#tab-weekly-report .report-help{font-size:13px;color:var(--muted);margin:-6px 0 16px}
+@media(max-width:1100px){#tab-weekly-report .report-toolbar{grid-template-columns:1fr 1fr}#tab-weekly-report .rp-kpis{grid-template-columns:repeat(2,1fr)}#tab-weekly-report .rp-grid,#tab-weekly-report .rp-tables{grid-template-columns:1fr}#tab-weekly-report .rp-chart{height:360px}}
+@media(max-width:650px){#tab-weekly-report .report-toolbar{grid-template-columns:1fr}#tab-weekly-report .rp-kpis{grid-template-columns:1fr 1fr}#tab-weekly-report .report-preview{padding:16px;font-size:14px}#tab-weekly-report .rp-logo{display:none}#tab-weekly-report .rp-title{font-size:24px}}
 </style>
 <script id="dmReportsScript">
 (function(){
@@ -2571,25 +2562,30 @@ function rGroup(rows,key){
  return [...m.values()].sort((a,b)=>b.value-a.value);
 }
 function ensureReports(){
- const tabs=document.querySelector('.tabs');
- if(tabs&&!document.querySelector('[data-tab="tab-relatorios"]')){
-  const b=document.createElement('button');b.className='tab-btn';b.type='button';b.dataset.tab='tab-relatorios';b.textContent='Relatórios';
-  b.addEventListener('click',()=>{document.querySelectorAll('.tab-btn').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.toggle('active',x.id==='tab-relatorios'));setTimeout(renderReport,20)});tabs.appendChild(b);
+ let sec=R('tab-weekly-report');
+ if(!sec){
+  sec=document.createElement('section');sec.id='tab-weekly-report';sec.className='tab-panel weekly-report-access';
+  const footer=R('dashboard')?.querySelector('.footer');footer?R('dashboard').insertBefore(sec,footer):R('dashboard')?.appendChild(sec);
  }
- if(!R('tab-relatorios')){
-  const sec=document.createElement('section');sec.id='tab-relatorios';sec.className='tab-panel';sec.innerHTML=`<div class="panel wide"><h2>Relatórios de vendas</h2><div class="report-toolbar">
-   <div class="filter"><label>Modelo</label><select id="reportType"><option value="daily">Relatório semanal</option><option value="compare">Comparação anos / meses</option></select></div>
-   <div class="filter"><label>Semana principal</label><select id="reportWeekPrimary"><option value="">Usar filtro geral / todas</option></select></div>
+ let host=R('weeklyReportEmbeddedHost');
+ if(!host){host=document.createElement('div');host.id='weeklyReportEmbeddedHost';sec.appendChild(host)}
+ if(!R('reportPreview')){
+  host.innerHTML=`<div class="panel wide"><h2>Relatório semanal de vendas</h2><div class="smallnote" style="margin-bottom:16px">Escolha uma semana existente no Excel. O relatório é atualizado automaticamente e respeita também os filtros gerais de ano, mês, vendedor, cliente, área, grupo, distrito e artigo.</div><div class="report-toolbar">
+   <div class="filter"><label>Semana principal</label><select id="reportWeekPrimary"><option value="">Todas / usar filtro geral</option></select></div>
    <div class="filter"><label>Comparar com semana</label><select id="reportWeekCompare"><option value="">Sem comparação</option></select></div>
-   <div class="filter"><label>Nome da pesquisa / relatório</label><input id="reportName" placeholder="Ex.: DM / 34-N002 / 2025-2026"></div>
+   <div class="filter"><label>Nome da pesquisa / relatório</label><input id="reportName" placeholder="Ex.: Relatório semanal DM"></div>
    <div class="filter"><label>Pesquisar cliente no relatório</label><input class="report-search-input" type="search" id="reportClientSearch" list="reportClientList" placeholder="Nome ou parte do nome"><datalist id="reportClientList"></datalist></div>
    <div class="filter"><label>Pesquisar vendedor no relatório</label><input class="report-search-input" type="search" id="reportSellerSearch" list="reportSellerList" placeholder="Nome ou parte do nome"><datalist id="reportSellerList"></datalist></div>
    <div class="filter"><label>Dimensão comparativa</label><select id="reportDimension"><option value="area">Área de negócio</option><option value="cliente">Cliente</option><option value="vendedor">Vendedor</option><option value="artigo_desc">Artigo</option></select></div>
    <div class="filter"><label>Linhas por tabela</label><select id="reportLimit"><option>5</option><option selected>6</option><option>8</option><option>10</option></select></div>
+   <input type="hidden" id="reportType" value="daily">
    <div class="report-actions"><button type="button" class="secondary" id="reportClearSearch">Limpar pesquisa</button><button type="button" class="secondary" id="reportRefresh">Atualizar</button><button type="button" class="accent" id="reportPdf">Exportar PDF</button></div>
-  </div><div class="report-help">Selecione uma semana principal e, opcionalmente, uma segunda semana para comparação. O texto da coluna SEMANA é apresentado exatamente como está no Excel. Cliente e Vendedor combinam-se com todos os filtros gerais ativos.</div><div id="reportPreview" class="report-preview"></div></div>`;
-  R('dashboard').appendChild(sec);
-  ['reportType','reportDimension','reportLimit','reportWeekPrimary','reportWeekCompare'].forEach(id=>R(id).addEventListener('change',renderReport));['reportName','reportClientSearch','reportSellerSearch'].forEach(id=>R(id).addEventListener('input',renderReport));R('reportClearSearch').addEventListener('click',()=>{R('reportClientSearch').value='';R('reportSellerSearch').value='';renderReport()});R('reportRefresh').addEventListener('click',renderReport);R('reportPdf').addEventListener('click',exportReportPdf);populateReportSearchLists();
+  </div><div class="report-help">As semanas são lidas diretamente da coluna SEMANA do Excel. A semana principal pode ser comparada com outra semana e todos os filtros gerais continuam ativos.</div><div id="reportPreview" class="report-preview"></div></div>`;
+  ['reportDimension','reportLimit','reportWeekPrimary','reportWeekCompare'].forEach(id=>R(id)?.addEventListener('change',renderReport));
+  ['reportName','reportClientSearch','reportSellerSearch'].forEach(id=>R(id)?.addEventListener('input',renderReport));
+  R('reportClearSearch')?.addEventListener('click',()=>{R('reportClientSearch').value='';R('reportSellerSearch').value='';renderReport()});
+  R('reportRefresh')?.addEventListener('click',renderReport);R('reportPdf')?.addEventListener('click',exportReportPdf);
+  populateReportSearchLists();
  }
 }
 function populateReportSearchLists(){
@@ -2598,13 +2594,20 @@ function populateReportSearchLists(){
  fill('reportClientList','cliente');fill('reportSellerList','vendedor');populateReportWeeks();
 }
 function populateReportWeeks(){
- const weeks=[...new Set((typeof DATA!=='undefined'?DATA:[]).map(x=>cleanFilterLabel(x.semana)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt',{numeric:true,sensitivity:'base'}));
+ const weekKey=value=>{
+  const text=cleanFilterLabel(value),week=Number((text.match(/\bS\s*(\d{1,2})\b/i)||[])[1]||0),years=[...text.matchAll(/\b(20\d{2})\b/g)].map(m=>Number(m[1]));
+  return {text,year:years.length?Math.max(...years):0,week};
+ };
+ const weeks=[...new Set((typeof DATA!=='undefined'?DATA:[]).map(x=>cleanFilterLabel(x.semana)).filter(Boolean))]
+  .sort((a,b)=>{const ka=weekKey(a),kb=weekKey(b);return ka.year-kb.year||ka.week-kb.week||ka.text.localeCompare(kb.text,'pt',{numeric:true,sensitivity:'base'})});
  const primary=R('reportWeekPrimary'),compare=R('reportWeekCompare');if(!primary||!compare)return;
  const oldP=primary.value,oldC=compare.value;
  primary.innerHTML='<option value="">Usar filtro geral / todas</option>'+weeks.map(w=>`<option value="${rAttr(w)}">${rEsc(w)}</option>`).join('');
  compare.innerHTML='<option value="">Sem comparação</option>'+weeks.map(w=>`<option value="${rAttr(w)}">${rEsc(w)}</option>`).join('');
- if(weeks.includes(oldP))primary.value=oldP;if(weeks.includes(oldC))compare.value=oldC;
+ if(weeks.includes(oldP))primary.value=oldP;else if(weeks.length)primary.value=weeks[weeks.length-1];
+ if(weeks.includes(oldC))compare.value=oldC;
 }
+window.dmRefreshReportWeeks=function(){populateReportSearchLists();renderReport()};
 function reportBaseRows(){
  const weekEl=R('semana'),old=weekEl?weekEl.value:'';if(weekEl)weekEl.value='';
  let rows=typeof filtered==='function'?filtered():(typeof DATA!=='undefined'?DATA:[]);
@@ -2701,7 +2704,7 @@ h1{font-size:24px}
 
 </body></html>`);win.document.close();
 }
-const oldUpdate=window.update;if(typeof oldUpdate==='function')window.update=function(){const out=oldUpdate.apply(this,arguments);setTimeout(()=>{if(R('tab-relatorios')){populateReportSearchLists();renderReport()}},30);return out};
+const oldUpdate=window.update;if(typeof oldUpdate==='function')window.update=function(){const out=oldUpdate.apply(this,arguments);setTimeout(()=>{if(R('reportPreview')){populateReportSearchLists();renderReport()}},30);return out};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureReports();setTimeout(renderReport,250)});else{ensureReports();setTimeout(renderReport,250)}
 })();
 </script>
