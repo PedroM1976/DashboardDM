@@ -3790,5 +3790,249 @@ window.dmPortalIntro={show:()=>showIntro(true),config:()=>loadCfg()};
 })();
 </script>
 
+
+<style id="dmThreeRequestedChangesStyles">
+.dm-notify-wrap{position:relative;margin-left:auto;margin-right:14px}.dm-notify-btn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;padding:0;border:2px solid rgba(255,255,255,.65);box-shadow:0 7px 20px rgba(0,0,0,.2);font-size:22px;position:relative}.dm-notify-btn.red{background:#dc2626}.dm-notify-btn.yellow{background:#f59e0b}.dm-notify-btn.green{background:#16a34a}.dm-notify-count{position:absolute;right:-5px;top:-6px;min-width:21px;height:21px;padding:0 5px;border-radius:999px;background:#fff;color:#0b1533;border:2px solid currentColor;font-size:11px;font-weight:950;display:none;align-items:center;justify-content:center}.dm-notify-btn.green .dm-notify-count{display:flex}.dm-notify-pop{position:absolute;right:0;top:56px;width:285px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow);padding:13px;z-index:200;display:none}.dm-notify-pop.open{display:block}.dm-notify-pop h3{font-size:14px;margin:0 0 9px}.dm-notify-item{display:flex;justify-content:space-between;gap:12px;padding:9px 5px;border-top:1px solid var(--line);font-size:12px}.dm-notify-item b{font-size:15px}.dm-period-strip{display:none;margin:0 0 8px;background:linear-gradient(135deg,#102958,#0657ff);border-radius:14px;padding:8px 10px;color:#fff;box-shadow:0 8px 20px rgba(15,23,42,.10)}.dm-period-strip.visible{display:block}.dm-period-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}.dm-period-head strong{font-size:13px}.dm-period-head span{font-size:9px;opacity:.78}.dm-period-kpis{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:7px}.dm-period-kpi{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.20);color:#fff;text-align:left;padding:7px 10px;border-radius:10px;min-height:48px}.dm-period-kpi span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.04em;opacity:.82}.dm-period-kpi b{display:block;font-size:15px;margin-top:2px}.dm-period-kpi:hover{background:rgba(255,255,255,.18)}.dm-month-strip{background:linear-gradient(135deg,#173b76,#1670db)}.dm-article-tools{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:12px;margin-bottom:16px}.dm-article-list{max-height:650px;overflow:auto}.dm-article-row{cursor:pointer}.dm-article-row:hover{background:#eef5ff}.dm-article-code{font-weight:900;color:#0348d5}.dm-article-description{color:#475569}.dm-results-count{font-size:12px;color:var(--muted);margin:0 0 10px}@media(max-width:850px){.dm-period-kpis,.dm-article-tools{grid-template-columns:1fr 1fr}.dm-notify-wrap{margin-left:0}}@media(max-width:560px){.dm-period-kpis,.dm-article-tools{grid-template-columns:1fr}.dm-notify-pop{position:fixed;left:12px;right:12px;top:80px;width:auto}}
+</style>
+<script id="dmThreeRequestedChangesScript">
+(function(){
+'use strict';
+const G=id=>document.getElementById(id), money=v=>new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(v)||0), number=v=>new Intl.NumberFormat('pt-PT',{maximumFractionDigits:0}).format(Number(v)||0);
+let previousSnapshot=null, notice={entries:0,free:0};
+function snapshot(){const rows=typeof DATA!=='undefined'?DATA:[];return {rows:rows.length,free:rows.filter(r=>String(r.area||'').toUpperCase()==='CAMPOS LIVRES').length,sig:rows.map(r=>[r.ano,r.mes,r.semana,r.artigo,r.cliente,r.quantidade,r.valor_liquido,r.margem,r.area].join('|')).join('~')}}
+function ensureBell(){if(G('dmNotifyWrap'))return;const head=document.querySelector('header .head');if(!head)return;const wrap=document.createElement('div');wrap.id='dmNotifyWrap';wrap.className='dm-notify-wrap';wrap.innerHTML='<button id="dmNotifyBtn" class="dm-notify-btn red" type="button" title="Notificações" aria-label="Notificações">🔔<span id="dmNotifyCount" class="dm-notify-count">0</span></button><div id="dmNotifyPop" class="dm-notify-pop"><h3>Atualizações dos dados</h3><div class="dm-notify-item"><span>Novas entradas</span><b id="dmNoticeEntries">0</b></div><div class="dm-notify-item"><span>Campos livres atualizados</span><b id="dmNoticeFree">0</b></div></div>';head.appendChild(wrap);G('dmNotifyBtn').onclick=e=>{e.stopPropagation();G('dmNotifyPop').classList.toggle('open')};document.addEventListener('click',()=>G('dmNotifyPop')?.classList.remove('open'))}
+function bellState(state){ensureBell();const b=G('dmNotifyBtn');if(!b)return;b.classList.remove('red','yellow','green');b.classList.add(state);if(state==='green'){const total=Math.max(1,notice.entries+notice.free);G('dmNotifyCount').textContent=total>99?'99+':total;G('dmNoticeEntries').textContent=number(notice.entries);G('dmNoticeFree').textContent=number(notice.free)}else{G('dmNotifyCount').textContent='0'}}
+function startLoading(){bellState('yellow')}
+function finishLoading(){const now=snapshot();if(previousSnapshot&&previousSnapshot.sig!==now.sig){notice.entries=Math.max(0,now.rows-previousSnapshot.rows);notice.free=Math.abs(now.free-previousSnapshot.free);if(!notice.entries&&!notice.free)notice.entries=1;bellState('green')}else bellState('red');previousSnapshot=now}
+function isoWeek(d=new Date()){const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));x.setUTCDate(x.getUTCDate()+4-(x.getUTCDay()||7));const y=new Date(Date.UTC(x.getUTCFullYear(),0,1));return {year:x.getUTCFullYear(),week:Math.ceil((((x-y)/86400000)+1)/7)}}
+function rowWeekNumber(v){const s=String(v||'');const m=s.match(/(?:SEMANA|SEM|S|WEEK)?\s*[-:]?\s*(\d{1,2})(?!\d)/i);return m?Number(m[1]):0}
+function marginPct(rows){
+  const net=rows.reduce((a,r)=>a+(Number(r.valor_liquido)||0),0);
+  const margin=rows.reduce((a,r)=>a+(Number(r.margem)||0),0);
+  return net ? (margin/net)*100 : 0;
+}
+function pct(v){
+  return new Intl.NumberFormat('pt-PT',{minimumFractionDigits:1,maximumFractionDigits:2}).format(Number(v)||0)+'%';
+}
+function periodBaseRows(){
+  const base=typeof DATA!=='undefined'?DATA:[];
+  return typeof roleVisibleRows==='function'?roleVisibleRows(base):base;
+}
+function ensurePeriodStrips(){
+  if(G('dmMonthStrip')&&G('dmWeekStrip'))return;
+  const cards=document.querySelector('section.cards');
+  if(!cards)return;
+
+  if(!G('dmMonthStrip')){
+    const month=document.createElement('section');
+    month.id='dmMonthStrip';
+    month.className='dm-period-strip dm-month-strip';
+    month.innerHTML='<div class="dm-period-head"><strong id="dmMonthTitle">Mês atual</strong><span>Valores do mês, independentes dos filtros</span></div><div class="dm-period-kpis"><button class="dm-period-kpi" data-period="month"><span>Vendas sem IVA</span><b id="dmMonthSem">€0</b></button><button class="dm-period-kpi" data-period="month"><span>Vendas com IVA</span><b id="dmMonthCom">€0</b></button><button class="dm-period-kpi" data-period="month"><span>Margem</span><b id="dmMonthMargem">0%</b></button><button class="dm-period-kpi" data-period="month"><span>Total de clientes</span><b id="dmMonthClientes">0</b></button></div>';
+    cards.parentNode.insertBefore(month,cards);
+  }
+
+  if(!G('dmWeekStrip')){
+    const week=document.createElement('section');
+    week.id='dmWeekStrip';
+    week.className='dm-period-strip dm-week-strip';
+    week.innerHTML='<div class="dm-period-head"><strong id="dmWeekTitle">Semana atual</strong><span>Clique num indicador para abrir o relatório semanal</span></div><div class="dm-period-kpis"><button class="dm-period-kpi" data-period="week"><span>Vendas sem IVA</span><b id="dmWeekSem">€0</b></button><button class="dm-period-kpi" data-period="week"><span>Vendas com IVA</span><b id="dmWeekCom">€0</b></button><button class="dm-period-kpi" data-period="week"><span>Margem</span><b id="dmWeekMargem">0%</b></button><button class="dm-period-kpi" data-period="week"><span>Total de clientes</span><b id="dmWeekClientes">0</b></button></div>';
+    cards.parentNode.insertBefore(week,cards);
+    week.querySelectorAll('button').forEach(b=>b.onclick=openWeeklyReport);
+  }
+}
+function currentWeekRows(){
+  const iw=isoWeek(),base=periodBaseRows();
+  let rows=(base||[]).filter(r=>rowWeekNumber(r.semana)===iw.week);
+  const exact=rows.filter(r=>Number(r.ano)===iw.year);
+  return exact.length?exact:rows.filter(r=>{
+    const s=String(r.semana||'');
+    return new RegExp('\\b'+iw.year+'\\b').test(s);
+  });
+}
+function currentMonthRows(){
+  const now=new Date(),year=now.getFullYear(),month=now.getMonth()+1;
+  const base=periodBaseRows();
+  return (base||[]).filter(r=>Number(r.ano)===year&&Number(r.mes)===month);
+}
+function renderWeekly(){
+  ensurePeriodStrips();
+  const now=new Date(),iw=isoWeek();
+  const monthRows=currentMonthRows(),weekRows=currentWeekRows();
+  const monthBox=G('dmMonthStrip'),weekBox=G('dmWeekStrip');
+
+  if(monthBox){
+    if(!monthRows.length)monthBox.classList.remove('visible');
+    else{
+      monthBox.classList.add('visible');
+      const monthName=new Intl.DateTimeFormat('pt-PT',{month:'long'}).format(now);
+      G('dmMonthTitle').textContent=monthName.charAt(0).toUpperCase()+monthName.slice(1)+' de '+now.getFullYear();
+      G('dmMonthSem').textContent=money(monthRows.reduce((a,r)=>a+(Number(r.valor_liquido)||0),0));
+      G('dmMonthCom').textContent=money(monthRows.reduce((a,r)=>a+(Number(r.valor_total)||0),0));
+      G('dmMonthMargem').textContent=pct(marginPct(monthRows));
+      G('dmMonthClientes').textContent=number(new Set(monthRows.map(r=>r.cliente).filter(Boolean)).size);
+    }
+  }
+
+  if(weekBox){
+    if(!weekRows.length)weekBox.classList.remove('visible');
+    else{
+      weekBox.classList.add('visible');
+      G('dmWeekTitle').textContent='Semana '+iw.week+' de '+iw.year;
+      G('dmWeekSem').textContent=money(weekRows.reduce((a,r)=>a+(Number(r.valor_liquido)||0),0));
+      G('dmWeekCom').textContent=money(weekRows.reduce((a,r)=>a+(Number(r.valor_total)||0),0));
+      G('dmWeekMargem').textContent=pct(marginPct(weekRows));
+      G('dmWeekClientes').textContent=number(new Set(weekRows.map(r=>r.cliente).filter(Boolean)).size);
+    }
+  }
+}
+function openWeeklyReport(){
+  const iw=isoWeek();
+  let btn=document.querySelector('[data-tab="tab-weekly-report"]');
+  if(!btn){
+    if(typeof window.dmCheckWeeklyReport==='function')window.dmCheckWeeklyReport();
+    btn=document.querySelector('[data-tab="tab-weekly-report"]');
+  }
+  if(btn)btn.click();
+  else{
+    const panel=G('tab-weekly-report');
+    if(panel){
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p===panel));
+      panel.scrollIntoView({behavior:'smooth'});
+    }
+  }
+  setTimeout(()=>{
+    const s=G('reportWeekPrimary');
+    if(!s)return;
+    const op=[...s.options].find(o=>{
+      const value=String(o.value||'');
+      const years=[...value.matchAll(/\\b(20\\d{2})\\b/g)].map(m=>Number(m[1]));
+      const optionYear=years.length?Math.max(...years):0;
+      return rowWeekNumber(value)===iw.week && optionYear===iw.year;
+    });
+    if(op){
+      s.value=op.value;
+      s.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+  },180);
+}
+function ensureArticleTab(){if(G('tab-sales-articles'))return;const tabs=document.querySelector('.tabs'),articleBtn=document.querySelector('[data-tab="tab-artigos"]');if(!tabs||!articleBtn)return;const btn=document.createElement('button');btn.className='tab-btn';btn.type='button';btn.dataset.tab='tab-sales-articles';btn.textContent='Vendas por artigo';articleBtn.insertAdjacentElement('afterend',btn);const panel=document.createElement('section');panel.id='tab-sales-articles';panel.className='tab-panel';panel.innerHTML='<div class="panel wide"><h2>Quantidade de vendas por artigo</h2><div class="dm-article-tools"><div class="filter"><label>Área de negócio</label><select id="dmArticleArea"><option value="">Todas</option></select></div><div class="filter"><label>Grupo</label><select id="dmArticleGroup"><option value="">Todos</option></select></div><div class="filter"><label>Código / descrição</label><input id="dmArticleSearch" type="search" placeholder="Pesquisar código ou descrição…"></div></div><div id="dmArticleCount" class="dm-results-count"></div><div id="dmArticleResults" class="dm-article-list"></div></div>';const footer=document.querySelector('#dashboard .footer');footer.parentNode.insertBefore(panel,footer);btn.onclick=()=>{document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p===panel));renderArticleList();tabs.scrollIntoView({behavior:'smooth',block:'start'})};['dmArticleArea','dmArticleGroup'].forEach(id=>G(id).addEventListener('change',renderArticleList));G('dmArticleSearch').addEventListener('input',renderArticleList)}
+function fillArticleFilters(){ensureArticleTab();const set=(id,vals)=>{const el=G(id);if(!el)return;const old=el.value;el.innerHTML='<option value="">'+(id==='dmArticleArea'?'Todas':'Todos')+'</option>'+[...new Set(vals.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'pt',{numeric:true,sensitivity:'base'})).map(v=>'<option value="'+String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</option>').join('');if([...el.options].some(o=>o.value===old))el.value=old};const rows=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA;set('dmArticleArea',rows.map(r=>r.area));set('dmArticleGroup',rows.map(r=>r.grupo))}
+function renderArticleList(){if(!G('dmArticleResults'))return;const area=G('dmArticleArea').value,groupValue=G('dmArticleGroup').value,q=String(G('dmArticleSearch').value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();let rows=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA;rows=rows.filter(r=>(!area||r.area===area)&&(!groupValue||r.grupo===groupValue)&&(!q||String((r.artigo||'')+' '+(r.descricao||'')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().includes(q)));const map=new Map();rows.forEach(r=>{const key=r.artigo_desc||r.artigo;if(!map.has(key))map.set(key,{key,code:r.artigo,desc:r.descricao,qtd:0});map.get(key).qtd+=Number(r.quantidade)||0});const list=[...map.values()].sort((a,b)=>b.qtd-a.qtd);G('dmArticleCount').textContent=number(list.length)+' artigo(s) encontrado(s)';G('dmArticleResults').innerHTML=list.length?'<table><thead><tr><th>Código do artigo</th><th>Descrição</th><th class="num">Quantidade vendida</th></tr></thead><tbody>'+list.map(x=>'<tr class="dm-article-row" data-key="'+String(x.key).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"><td class="dm-article-code">'+String(x.code).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</td><td class="dm-article-description">'+String(x.desc||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</td><td class="num"><b>'+number(x.qtd)+'</b></td></tr>').join('')+'</tbody></table>':'<div class="empty">Sem artigos para esta pesquisa.</div>';G('dmArticleResults').querySelectorAll('.dm-article-row').forEach(tr=>tr.onclick=()=>showDetails('artigo',tr.dataset.key))}
+function init(){ensureBell();ensurePeriodStrips();ensureArticleTab();fillArticleFilters();renderWeekly();renderArticleList();previousSnapshot=snapshot();bellState('red');const originalUpdate=window.update;if(typeof originalUpdate==='function'&&!window.__dmThreeUpdate){window.update=function(){const out=originalUpdate.apply(this,arguments);renderWeekly();renderArticleList();return out};window.__dmThreeUpdate=true}const originalParse=window.parseFile;if(typeof originalParse==='function'&&!window.__dmThreeParse){window.parseFile=async function(){startLoading();try{const out=await originalParse.apply(this,arguments);finishLoading();fillArticleFilters();renderWeekly();renderArticleList();return out}catch(e){bellState('red');throw e}};window.__dmThreeParse=true}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,250));else setTimeout(init,250);
+})();
+</script>
+
+
+
+<style id="dmAllTabsCompactStyles">
+/* Todos os separadores visíveis numa barra compacta. */
+.tabs{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:5px!important;
+  padding:7px!important;
+  overflow-x:visible!important;
+}
+.tabs .tab-btn{
+  display:inline-flex!important;
+  flex:0 0 auto!important;
+  align-items:center;
+  justify-content:center;
+  min-height:34px!important;
+  padding:7px 9px!important;
+  border-radius:9px!important;
+  font-size:11.5px!important;
+  line-height:1.15!important;
+}
+.tabs .tab-btn[data-tab="tab-catalogo"]{font-size:0!important}
+.tabs .tab-btn[data-tab="tab-catalogo"]::after{content:"Catálogo";font-size:11.5px}
+.tabs .tab-btn[data-tab="tab-produto"]{font-size:0!important}
+.tabs .tab-btn[data-tab="tab-produto"]::after{content:"Produto";font-size:11.5px}
+.tabs .tab-btn[data-tab="tab-weekly-report"]{font-size:0!important}
+.tabs .tab-btn[data-tab="tab-weekly-report"]::after{content:"Semanal";font-size:11.5px}
+/* Garante que nenhuma aba fica escondida por versões anteriores. */
+.tabs .dm-menu-hidden-tab{display:inline-flex!important}
+#dmMenuTrigger,#dmNavBackdrop,#dmNavDrawer{display:none!important}
+@media(max-width:760px){
+  .tabs{flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:thin}
+  .tabs .tab-btn{font-size:11px!important;padding:7px 8px!important}
+  .tabs .tab-btn[data-tab="tab-catalogo"]::after,
+  .tabs .tab-btn[data-tab="tab-produto"]::after,
+  .tabs .tab-btn[data-tab="tab-weekly-report"]::after{font-size:11px}
+}
+</style>
+<script id="dmAllTabsAndWeekFixScript">
+(function(){
+'use strict';
+const byId=id=>document.getElementById(id);
+const clean=v=>{try{return typeof cleanFilterLabel==='function'?cleanFilterLabel(v):String(v||'').trim()}catch(_){return String(v||'').trim()}};
+const weekNo=v=>{const m=String(v||'').match(/(?:SEMANA|SEM|S|WEEK)?\s*[-:]?\s*(\d{1,2})(?!\d)/i);return m?Number(m[1]):0};
+function visibleRows(){
+  try{
+    const all=Array.isArray(DATA)?DATA:[];
+    return typeof roleVisibleRows==='function'?roleVisibleRows(all):all;
+  }catch(_){return []}
+}
+function weeklyTarget(){
+  let selected=[];
+  try{if(typeof currentWeekRows==='function')selected=currentWeekRows()||[]}catch(_){}
+  if(!selected.length){
+    const now=new Date(),d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
+    d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+    const y=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    const w=Math.ceil((((d-y)/86400000)+1)/7);
+    selected=visibleRows().filter(r=>weekNo(r.semana)===w && Number(r.ano)===d.getUTCFullYear());
+    if(!selected.length)selected=visibleRows().filter(r=>weekNo(r.semana)===w);
+  }
+  if(!selected.length)return null;
+  const row=selected[0];
+  return {label:clean(row.semana),week:weekNo(row.semana),year:Number(row.ano)||0};
+}
+function prepareTabs(){
+  const tabs=document.querySelector('.tabs');if(!tabs)return;
+  tabs.classList.remove('dm-compact-tabs');
+  byId('dmMenuTrigger')?.remove();
+  tabs.querySelectorAll('.dm-menu-hidden-tab').forEach(x=>x.classList.remove('dm-menu-hidden-tab'));
+  byId('dmNavBackdrop')?.remove();byId('dmNavDrawer')?.remove();
+}
+function chooseWeek(target,attempt=0){
+  if(!target)return;
+  const year=byId('ano');
+  if(year&&target.year){
+    const op=[...year.options].find(o=>Number(o.value)===target.year||Number(o.textContent)===target.year);
+    if(op&&year.value!==op.value){year.value=op.value;year.dispatchEvent(new Event('change',{bubbles:true}))}
+  }
+  if(typeof window.dmRefreshReportWeeks==='function')window.dmRefreshReportWeeks();
+  const select=byId('reportWeekPrimary');
+  if(!select){if(attempt<15)setTimeout(()=>chooseWeek(target,attempt+1),120);return}
+  let op=[...select.options].find(o=>clean(o.value)===target.label);
+  if(!op)op=[...select.options].find(o=>weekNo(o.value)===target.week);
+  if(!op){if(attempt<15)setTimeout(()=>chooseWeek(target,attempt+1),120);return}
+  select.value=op.value;
+  select.dispatchEvent(new Event('change',{bubbles:true}));
+  byId('reportPreview')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function openCorrectWeek(e){
+  e?.preventDefault();
+  const target=weeklyTarget();
+  let tab=document.querySelector('.tab-btn[data-tab="tab-weekly-report"]');
+  if(!tab&&typeof window.dmCheckWeeklyReport==='function'){window.dmCheckWeeklyReport();tab=document.querySelector('.tab-btn[data-tab="tab-weekly-report"]')}
+  if(tab)tab.click();
+  else{
+    const panel=byId('tab-weekly-report');
+    if(panel){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p===panel));panel.scrollIntoView({behavior:'smooth',block:'start'})}
+  }
+  setTimeout(()=>chooseWeek(target),100);
+}
+function bind(){
+  prepareTabs();
+  document.querySelectorAll('#dmWeekStrip .dm-week-kpi').forEach(btn=>btn.onclick=openCorrectWeek);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,450));else setTimeout(bind,450);
+new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 </body>
 </html>
