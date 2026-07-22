@@ -277,8 +277,8 @@ h1{font-size:24px}
 
 <section id="tab-visao" class="tab-panel active">
   <div class="grid">
-    <div class="panel wide"><h2>Evolução mensal — vendas sem IVA <span class="chart-title-note">· fixa, sem filtros: ano atual vs ano anterior · clique para ver detalhe</span></h2><div id="chartMonthly" class="chart empty">Sem dados. Carregue um Excel.</div></div>
-    <div class="panel wide"><h2>Evolução mensal de acordo com os filtros <span class="chart-title-note">· atualiza com os filtros ativos e compara o ano selecionado com o anterior · clique para ver detalhe</span></h2><div id="chartMonthlyFiltered" class="chart empty">Sem dados. Carregue um Excel.</div></div>
+    <div class="panel wide"><h2>Evolução mensal — vendas sem IVA <span class="chart-title-note">· fixa, sem filtros e sem comparação com o ano anterior · clique para ver detalhe</span></h2><div id="chartMonthly" class="chart empty">Sem dados. Carregue um Excel.</div></div>
+    <div class="panel wide"><h2>Evolução mensal de acordo com os filtros <span class="chart-title-note">· atualiza com os filtros ativos · clique para ver detalhe</span></h2><div id="chartMonthlyFiltered" class="chart empty">Sem dados. Carregue um Excel.</div></div>
     <div class="panel wide"><h2>Resumo por área de negócio</h2><div id="tableAreas"></div></div>
     <div class="panel wide"><h2>Top rankings</h2><div class="tables"><div><h2>Clientes</h2><div id="tableClientes"></div></div><div><h2>Artigos</h2><div id="tableArtigos"></div></div><div><h2>Vendedores</h2><div id="tableVendedores"></div></div></div></div>
   </div>
@@ -595,6 +595,11 @@ function monthlySingleYearChart(el, arr){
  svg+=`<rect x="${w-r-145}" y="18" width="18" height="18" rx="4" fill="#0657ff"/><text class="label" x="${w-r-118}" y="33">${year}</text></svg>`;
  root.innerHTML=svg;bindChartClicks(el);
 }
+function monthlyFilteredChart(el, arr){
+ const selectedYear=Number(($('ano')&&$('ano').value)||0);
+ const rows=selectedYear?(arr||[]).filter(r=>Number(r.ano)===selectedYear):(arr||[]);
+ monthlyChart(el,rows);
+}
 function monthlyChart(el, arr){
  const root=$(el), years=[...new Set(arr.map(r=>Number(r.ano)).filter(Boolean))].sort((a,b)=>a-b);
  if(!years.length){root.classList.add('empty');root.innerHTML='<div class="empty">Sem dados</div>';return}
@@ -745,39 +750,7 @@ function updateAdvanced(arr){
 }
 
 function updateTables(arr){ const clientes=group(arr,'cliente'), artigos=group(arr,'artigo_desc'), vendedores=group(arr,'vendedor'), areas=group(arr,'area'); const money=r=>eur2.format(r.sem_iva), margem=r=>eur2.format(r.margem), pct=r=>r.sem_iva?(r.margem/r.sem_iva*100).toFixed(1).replace('.',',')+'%':'-'; table('tableClientes', clientes.slice(0,10), [{h:'Cliente',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Margem %',f:pct,num:true}]); table('tableArtigos', artigos.slice(0,10), [{h:'Artigo',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Qtd',f:r=>numf.format(r.qtd),num:true}]); table('tableVendedores', vendedores.slice(0,10), [{h:'Vendedor',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Margem',f:margem,num:true}]); table('tableAreas', areas, [{h:'Área',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'IVA',f:r=>eur2.format(r.iva),num:true},{h:'Com IVA',f:r=>eur2.format(r.com_iva),num:true},{h:'Margem',f:margem,num:true},{h:'Margem %',f:pct,num:true},{h:'Clientes',f:r=>numf.format(r.clientes.size),num:true},{h:'Artigos',f:r=>numf.format(r.artigos.size),num:true}]); barChart('chartClientes',clientes.slice(0,10),'nome','sem_iva','cliente'); barChart('chartVendedores',vendedores.slice(0,10),'nome','sem_iva','vendedor'); barChart('chartArtigos',artigos.slice(0,10),'nome','sem_iva','artigo'); barChart('chartAreas',areas.slice(0,12),'nome','sem_iva','area'); portugalMap('chartPortugal', arr); }
-function monthlyComparisonRows(){
- const base=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA;
- const q=norm(($('artigoPesquisa')&&$('artigoPesquisa').value)||'');
- const selectedYear=Number(($('ano')&&$('ano').value)||0);
- const monthValue=Number(($('mes')&&$('mes').value)||0);
- const weekValue=cleanFilterLabel(($('semana')&&$('semana').value)||'');
- const sellerValue=($('vendedor')&&$('vendedor').value)||'';
- const clientValue=($('cliente')&&$('cliente').value)||'';
- const areaValue=($('area')&&$('area').value)||'';
- const groupValue=($('grupo')&&$('grupo').value)||'';
- const availableYears=[...new Set(base.map(r=>Number(r.ano)).filter(Boolean))].sort((a,b)=>a-b);
- const referenceYear=selectedYear||(availableYears[availableYears.length-1]||0);
- const comparisonYears=new Set(referenceYear?[referenceYear-1,referenceYear]:[]);
- return base.filter(r=>
-   (!comparisonYears.size||comparisonYears.has(Number(r.ano)))&&
-   (!monthValue||Number(r.mes)===monthValue)&&
-   (!weekValue||cleanFilterLabel(r.semana)===weekValue)&&
-   (!sellerValue||r.vendedor===sellerValue)&&
-   (!clientValue||r.cliente===clientValue)&&
-   (!areaValue||r.area===areaValue)&&
-   (!groupValue||r.grupo===groupValue)&&
-   (!q||(r.search_blob||norm((r.artigo||'')+' '+(r.descricao||'')+' '+(r.artigo_desc||''))).includes(q))
- );
-}
-function fixedMonthlyComparisonRows(){
- const base=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA;
- const years=[...new Set(base.map(r=>Number(r.ano)).filter(Boolean))].sort((a,b)=>a-b);
- const current=years[years.length-1];
- if(!current)return [];
- const pair=new Set([current-1,current]);
- return base.filter(r=>pair.has(Number(r.ano)));
-}
-function update(){ const arr=filtered(); updateKpis(arr); monthlyChart('chartMonthly',fixedMonthlyComparisonRows()); monthlyChart('chartMonthlyFiltered',monthlyComparisonRows()); updateTables(arr); updateAdvanced(arr); window.dmCheckWeeklyReport?.(); }
+function update(){ const arr=filtered(); const fixedRows=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA; updateKpis(arr); monthlySingleYearChart('chartMonthly',fixedRows); monthlyFilteredChart('chartMonthlyFiltered',arr); updateTables(arr); updateAdvanced(arr); window.dmCheckWeeklyReport?.(); }
 
 function initTabs(){
  document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -1159,7 +1132,7 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
   }
 
   function clean(s){ return String(s??'').replace(/\s+/g,' ').trim(); }
-  function isAdminProfile(){ return ['administrador','assistencia'].includes(sessionStorage.getItem('dmCurrentUser')); }
+  function isAdminProfile(){ return ['administrador','administracao','administração','assistencia','assistência'].includes(clean(sessionStorage.getItem('dmCurrentUser')).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()); }
   function unique(rows,key){
     const m=new Map();
     rows.forEach(r=>{
@@ -1171,8 +1144,10 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
   }
   function fill(id,values,current=''){
     const el=c$(id); if(!el)return;
+    const currentToken=typeof norm==='function'?norm(clean(current)):clean(current).toUpperCase();
     el.innerHTML='<option value="">Todos</option>'+values.map(v=>`<option value="${cEsc(v)}">${cEsc(v)}</option>`).join('');
-    if(values.includes(current))el.value=current;
+    const matched=values.find(v=>(typeof norm==='function'?norm(clean(v)):clean(v).toUpperCase())===currentToken);
+    if(matched)el.value=matched;
   }
   function isHiddenCommercialValue(v){
     const token=typeof norm==='function'?norm(clean(v)):clean(v).toUpperCase();
@@ -1182,10 +1157,23 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
     const rows=Array.isArray(DATA)?DATA:[];
     const year=Number(c$('ano')?.value||0);
     const month=Number(c$('mes')?.value||0);
+    const week=clean(c$('semana')?.value||'');
+    const globalSeller=clean(c$('vendedor')?.value||'');
+    const globalClient=clean(c$('cliente')?.value||'');
+    const globalArea=clean(c$('area')?.value||'');
+    const globalGroup=clean(c$('grupo')?.value||'');
+    const globalArticle=clean(c$('artigoPesquisa')?.value||'');
+    const articleToken=typeof norm==='function'?norm(globalArticle):globalArticle.toUpperCase();
     const profileRows=(typeof roleVisibleRows==='function')?roleVisibleRows(rows):(isAdminProfile()?rows:rows.filter(r=>!isHiddenCommercialValue(r.vendedor)));
     return profileRows.filter(r=>
       (!year||Number(r.ano)===year) &&
-      (!month||Number(r.mes)===month)
+      (!month||Number(r.mes)===month) &&
+      (!week||clean(r.semana)===week) &&
+      (!globalSeller||(typeof norm==='function'?norm(clean(r.vendedor)):clean(r.vendedor).toUpperCase())===(typeof norm==='function'?norm(globalSeller):globalSeller.toUpperCase())) &&
+      (!globalClient||(typeof norm==='function'?norm(clean(r.cliente)):clean(r.cliente).toUpperCase())===(typeof norm==='function'?norm(globalClient):globalClient.toUpperCase())) &&
+      (!globalArea||clean(r.area)===globalArea) &&
+      (!globalGroup||clean(r.grupo)===globalGroup) &&
+      (!articleToken||(r.search_blob||((r.artigo||'')+' '+(r.descricao||'')+' '+(r.artigo_desc||'')).toUpperCase()).includes(articleToken))
     );
   }
   function researchRows(){
@@ -1195,8 +1183,8 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
     const article=clean(c$('commercialArticle')?.value||'');
     const aq=typeof norm==='function'?norm(article):article.toUpperCase();
     return rows.filter(r=>
-      (!seller||r.vendedor===seller) &&
-      (!client||r.cliente===client) &&
+      (!seller||(typeof norm==='function'?norm(clean(r.vendedor)):clean(r.vendedor).toUpperCase())===(typeof norm==='function'?norm(clean(seller)):clean(seller).toUpperCase())) &&
+      (!client||(typeof norm==='function'?norm(clean(r.cliente)):clean(r.cliente).toUpperCase())===(typeof norm==='function'?norm(clean(client)):clean(client).toUpperCase())) &&
       (!aq||(r.search_blob||((r.artigo||'')+' '+(r.descricao||'')+' '+(r.artigo_desc||'')).toUpperCase()).includes(aq))
     );
   }
@@ -1205,7 +1193,8 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
     const seller=c$('commercialSeller')?.value||'';
     const client=c$('commercialClient')?.value||'';
     fill('commercialSeller',unique(rows,'vendedor'),seller);
-    const clientRows=seller?rows.filter(r=>r.vendedor===seller):rows;
+    const sellerToken=typeof norm==='function'?norm(clean(seller)):clean(seller).toUpperCase();
+    const clientRows=seller?rows.filter(r=>(typeof norm==='function'?norm(clean(r.vendedor)):clean(r.vendedor).toUpperCase())===sellerToken):rows;
     fill('commercialClient',unique(clientRows,'cliente'),client);
   }
   function sumRows(rows,key){return rows.reduce((a,r)=>a+(Number(r[key])||0),0)}
@@ -1612,14 +1601,14 @@ h1{font-size:24px}
     c$('commercialClear').onclick=()=>{c$('commercialSeller').value='';c$('commercialClient').value='';c$('commercialArticle').value='';render()};
     if(c$('commercialBack')) c$('commercialBack').onclick=commercialGoBack;
     c$('commercialPdf').onclick=exportPdf;
-    ['ano','mes'].forEach(id=>{
+    ['ano','mes','semana','vendedor','cliente','area','grupo'].forEach(id=>{
       const el=c$(id);
       if(el) el.addEventListener('change',()=>{
-        c$('commercialSeller').value='';
         c$('commercialClient').value='';
         render();
       });
     });
+    c$('artigoPesquisa')?.addEventListener('input',render);
     c$('calendarAdd').onclick=addCalendarEvent;
     c$('calendarPrev').onclick=()=>{calendarState.month=new Date(calendarState.month.getFullYear(),calendarState.month.getMonth()-1,1);renderCalendar()};
     c$('calendarNext').onclick=()=>{calendarState.month=new Date(calendarState.month.getFullYear(),calendarState.month.getMonth()+1,1);renderCalendar()};
