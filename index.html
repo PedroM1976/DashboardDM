@@ -3798,12 +3798,49 @@ window.dmPortalIntro={show:()=>showIntro(true),config:()=>loadCfg()};
 (function(){
 'use strict';
 const G=id=>document.getElementById(id), money=v=>new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(v)||0), number=v=>new Intl.NumberFormat('pt-PT',{maximumFractionDigits:0}).format(Number(v)||0);
-let previousSnapshot=null, notice={entries:0,free:0};
-function snapshot(){const rows=typeof DATA!=='undefined'?DATA:[];return {rows:rows.length,free:rows.filter(r=>String(r.area||'').toUpperCase()==='CAMPOS LIVRES').length,sig:rows.map(r=>[r.ano,r.mes,r.semana,r.artigo,r.cliente,r.quantidade,r.valor_liquido,r.margem,r.area].join('|')).join('~')}}
-function ensureBell(){if(G('dmNotifyWrap'))return;const head=document.querySelector('header .head');if(!head)return;const wrap=document.createElement('div');wrap.id='dmNotifyWrap';wrap.className='dm-notify-wrap';wrap.innerHTML='<button id="dmNotifyBtn" class="dm-notify-btn red" type="button" title="Notificações" aria-label="Notificações">🔔<span id="dmNotifyCount" class="dm-notify-count">0</span></button><div id="dmNotifyPop" class="dm-notify-pop"><h3>Atualizações dos dados</h3><div class="dm-notify-item"><span>Novas entradas</span><b id="dmNoticeEntries">0</b></div><div class="dm-notify-item"><span>Campos livres atualizados</span><b id="dmNoticeFree">0</b></div></div>';head.appendChild(wrap);G('dmNotifyBtn').onclick=e=>{e.stopPropagation();G('dmNotifyPop').classList.toggle('open')};document.addEventListener('click',()=>G('dmNotifyPop')?.classList.remove('open'))}
-function bellState(state){ensureBell();const b=G('dmNotifyBtn');if(!b)return;b.classList.remove('red','yellow','green');b.classList.add(state);if(state==='green'){const total=Math.max(1,notice.entries+notice.free);G('dmNotifyCount').textContent=total>99?'99+':total;G('dmNoticeEntries').textContent=number(notice.entries);G('dmNoticeFree').textContent=number(notice.free)}else{G('dmNotifyCount').textContent='0'}}
+let previousSnapshot=null, notice={total:0,free:0};
+function snapshot(){
+ const rows=typeof DATA!=='undefined'?DATA:[];
+ const groups=new Map();
+ const signatures=[];
+ rows.forEach(r=>{
+  // Identifica a linha sem usar a área, para conseguir detetar quando um campo livre foi preenchido.
+  const key=[r.ano,r.mes,r.semana,r.documento,r.artigo,r.cliente,r.vendedor,r.quantidade,r.valor_liquido,r.iva,r.margem].map(v=>String(v??'').trim()).join('|');
+  const area=String(r.area||'').trim().toUpperCase();
+  if(!groups.has(key))groups.set(key,{total:0,free:0});
+  const item=groups.get(key);item.total++;if(area==='CAMPOS LIVRES')item.free++;
+  signatures.push(key+'|'+area);
+ });
+ signatures.sort();
+ return {rows:rows.length,groups,sig:signatures.join('~')};
+}
+function countUpdatedFreeFields(previous,current){
+ let updated=0;
+ current.groups.forEach((now,key)=>{
+  const before=previous.groups.get(key);
+  if(!before)return;
+  // Conta apenas linhas existentes que antes estavam em CAMPOS LIVRES e agora foram preenchidas.
+  updated+=Math.max(0,Math.min(before.total,now.total,before.free)-now.free);
+ });
+ return updated;
+}
+function ensureBell(){if(G('dmNotifyWrap'))return;const head=document.querySelector('header .head');if(!head)return;const wrap=document.createElement('div');wrap.id='dmNotifyWrap';wrap.className='dm-notify-wrap';wrap.innerHTML='<button id="dmNotifyBtn" class="dm-notify-btn red" type="button" title="Notificações" aria-label="Notificações">🔔<span id="dmNotifyCount" class="dm-notify-count">0</span></button><div id="dmNotifyPop" class="dm-notify-pop"><h3>Atualizações dos dados</h3><div class="dm-notify-item"><span>Total de registos</span><b id="dmNoticeEntries">0</b></div><div class="dm-notify-item"><span>Campos livres atualizados</span><b id="dmNoticeFree">0</b></div></div>';head.appendChild(wrap);G('dmNotifyBtn').onclick=e=>{e.stopPropagation();G('dmNotifyPop').classList.toggle('open')};document.addEventListener('click',()=>G('dmNotifyPop')?.classList.remove('open'))}
+function bellState(state){
+ ensureBell();const b=G('dmNotifyBtn');if(!b)return;
+ b.classList.remove('red','yellow','green');b.classList.add(state);
+ G('dmNoticeEntries').textContent=number(notice.total);
+ G('dmNoticeFree').textContent=number(notice.free);
+ const changes=notice.free;
+ G('dmNotifyCount').textContent=changes>99?'99+':String(changes);
+}
 function startLoading(){bellState('yellow')}
-function finishLoading(){const now=snapshot();if(previousSnapshot&&previousSnapshot.sig!==now.sig){notice.entries=Math.max(0,now.rows-previousSnapshot.rows);notice.free=Math.abs(now.free-previousSnapshot.free);if(!notice.entries&&!notice.free)notice.entries=1;bellState('green')}else bellState('red');previousSnapshot=now}
+function finishLoading(){
+ const now=snapshot();
+ notice.total=now.rows;
+ notice.free=previousSnapshot?countUpdatedFreeFields(previousSnapshot,now):0;
+ bellState(previousSnapshot&&previousSnapshot.sig!==now.sig?'green':'red');
+ previousSnapshot=now;
+}
 function isoWeek(d=new Date()){const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));x.setUTCDate(x.getUTCDate()+4-(x.getUTCDay()||7));const y=new Date(Date.UTC(x.getUTCFullYear(),0,1));return {year:x.getUTCFullYear(),week:Math.ceil((((x-y)/86400000)+1)/7)}}
 function rowWeekNumber(v){const s=String(v||'');const m=s.match(/(?:SEMANA|SEM|S|WEEK)?\s*[-:]?\s*(\d{1,2})(?!\d)/i);return m?Number(m[1]):0}
 function marginPct(rows){
