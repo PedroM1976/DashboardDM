@@ -277,7 +277,7 @@ h1{font-size:24px}
 
 <section id="tab-visao" class="tab-panel active">
   <div class="grid">
-    <div class="panel wide"><h2>Evolução mensal — vendas sem IVA <span class="chart-title-note">· fixa, sem filtros e sem comparação com o ano anterior · clique para ver detalhe</span></h2><div id="chartMonthly" class="chart empty">Sem dados. Carregue um Excel.</div></div>
+    <div class="panel wide"><h2>Comparação mensal entre anos — vendas sem IVA <span class="chart-title-note">· fixa, compara 2025 e 2026 e não muda com os filtros · clique para ver detalhe</span></h2><div id="chartMonthly" class="chart empty">Sem dados. Carregue um Excel.</div></div>
     <div class="panel wide"><h2>Evolução mensal de acordo com os filtros <span class="chart-title-note">· atualiza com os filtros ativos · clique para ver detalhe</span></h2><div id="chartMonthlyFiltered" class="chart empty">Sem dados. Carregue um Excel.</div></div>
     <div class="panel wide"><h2>Resumo por área de negócio</h2><div id="tableAreas"></div></div>
     <div class="panel wide"><h2>Top rankings</h2><div class="tables"><div><h2>Clientes</h2><div id="tableClientes"></div></div><div><h2>Artigos</h2><div id="tableArtigos"></div></div><div><h2>Vendedores</h2><div id="tableVendedores"></div></div></div></div>
@@ -546,7 +546,20 @@ function bindChartClicks(el){
      const type=node.getAttribute('data-detail-type');
      const value=node.getAttribute('data-detail-value');
      if(typeof window.handleChartDrilldown==='function' && window.handleChartDrilldown(type,value,el)===true) return;
-     showDetails(type,value);
+     // O gráfico mensal comparativo é fixo. O detalhe recebe diretamente as
+     // linhas do ano/mês clicado, sem herdar o filtro global de ano.
+     if(el==='chartMonthly' && type==='mes'){
+       const parts=String(value).split('-');
+       const clickedYear=Number(parts[0]);
+       const clickedMonth=Number(parts[1]);
+       const fixedBase=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA;
+       const fixedDetailRows=secureCurrentUserRows(fixedBase).filter(r=>
+         Number(r.ano)===clickedYear && Number(r.mes)===clickedMonth
+       );
+       showDetails(type,value,el,fixedDetailRows);
+       return;
+     }
+     showDetails(type,value,el);
    });
  });
 }
@@ -631,7 +644,19 @@ function secureCurrentUserRows(rows){
  if(!ownSeller) return rows||[];
  return (rows||[]).filter(r=>norm(cleanFilterLabel(r.vendedor))===norm(ownSeller));
 }
-function detailRows(type,value){ const arr=secureCurrentUserRows(filtered()); if(type==='cliente') return arr.filter(r=>r.cliente===value); if(type==='vendedor') return arr.filter(r=>norm(r.vendedor)===norm(value)); if(type==='area') return arr.filter(r=>r.area===value); if(type==='distrito') return arr.filter(r=>normDistrictName(r.distrito)===value); if(type==='artigo') return arr.filter(r=>r.artigo_desc===value); if(type==='mes'){ const [a,m]=String(value).split('-'); return arr.filter(r=>String(r.ano)===a && String(r.mes).padStart(2,'0')===m); } return arr; }
+function detailRows(type,value,sourceChart=''){
+ const baseRows=sourceChart==='chartMonthly'
+   ? (typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA)
+   : filtered();
+ const arr=secureCurrentUserRows(baseRows);
+ if(type==='cliente') return arr.filter(r=>r.cliente===value);
+ if(type==='vendedor') return arr.filter(r=>norm(r.vendedor)===norm(value));
+ if(type==='area') return arr.filter(r=>r.area===value);
+ if(type==='distrito') return arr.filter(r=>normDistrictName(r.distrito)===value);
+ if(type==='artigo') return arr.filter(r=>r.artigo_desc===value);
+ if(type==='mes'){ const [a,m]=String(value).split('-').map(Number); return arr.filter(r=>Number(r.ano)===a && Number(r.mes)===m); }
+ return arr;
+}
 function detailLabel(type){ return {cliente:'Cliente',vendedor:'Vendedor',area:'Área de negócio',distrito:'Distrito',artigo:'Artigo',mes:'Mês'}[type]||'Detalhe'; }
 function miniList(title, rows){ return `<div class="detail-section"><h3>${title}</h3><div class="mini-list">${rows.length?rows.map(r=>`<div class="mini-row"><b title="${escAttr(r.nome)}">${esc(String(r.nome).slice(0,62))}</b><span>${eur2.format(r.sem_iva)}</span></div>`).join(''):'<div class="mini-row"><b>Sem dados</b><span>-</span></div>'}</div></div>`; }
 function detailMiniChart(title, rows, key, valueKey='sem_iva', format='money', limit=8){
@@ -655,8 +680,8 @@ function detailDistinctList(title, rows, key){
    '<div class="mini-row"><b>Sem dados</b><span>—</span></div>'
  }</div></div>`;
 }
-function showDetails(type,value){
- const arr=detailRows(type,value); const sem=sum(arr,'valor_liquido'), iva=sum(arr,'iva'), com=sum(arr,'valor_total'), margem=sum(arr,'margem'), qtd=sum(arr,'quantidade');
+function showDetails(type,value,sourceChart='',rowsOverride=null){
+ const arr=Array.isArray(rowsOverride)?rowsOverride:detailRows(type,value,sourceChart); const sem=sum(arr,'valor_liquido'), iva=sum(arr,'iva'), com=sum(arr,'valor_total'), margem=sum(arr,'margem'), qtd=sum(arr,'quantidade');
  const pct=sem?(margem/sem*100).toFixed(1).replace('.',',')+'%':'-';
  $('drawerTitle').textContent=detailLabel(type)+': '+(type==='mes' ? (arr[0] ? MONTHS[arr[0].mes]+' '+arr[0].ano : value) : value);
  $('drawerSub').textContent=`${numf.format(arr.length)} linhas · ${numf.format(new Set(arr.map(r=>r.cliente)).size)} clientes · ${numf.format(new Set(arr.map(r=>r.artigo)).size)} artigos`;
@@ -750,7 +775,7 @@ function updateAdvanced(arr){
 }
 
 function updateTables(arr){ const clientes=group(arr,'cliente'), artigos=group(arr,'artigo_desc'), vendedores=group(arr,'vendedor'), areas=group(arr,'area'); const money=r=>eur2.format(r.sem_iva), margem=r=>eur2.format(r.margem), pct=r=>r.sem_iva?(r.margem/r.sem_iva*100).toFixed(1).replace('.',',')+'%':'-'; table('tableClientes', clientes.slice(0,10), [{h:'Cliente',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Margem %',f:pct,num:true}]); table('tableArtigos', artigos.slice(0,10), [{h:'Artigo',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Qtd',f:r=>numf.format(r.qtd),num:true}]); table('tableVendedores', vendedores.slice(0,10), [{h:'Vendedor',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Margem',f:margem,num:true}]); table('tableAreas', areas, [{h:'Área',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'IVA',f:r=>eur2.format(r.iva),num:true},{h:'Com IVA',f:r=>eur2.format(r.com_iva),num:true},{h:'Margem',f:margem,num:true},{h:'Margem %',f:pct,num:true},{h:'Clientes',f:r=>numf.format(r.clientes.size),num:true},{h:'Artigos',f:r=>numf.format(r.artigos.size),num:true}]); barChart('chartClientes',clientes.slice(0,10),'nome','sem_iva','cliente'); barChart('chartVendedores',vendedores.slice(0,10),'nome','sem_iva','vendedor'); barChart('chartArtigos',artigos.slice(0,10),'nome','sem_iva','artigo'); barChart('chartAreas',areas.slice(0,12),'nome','sem_iva','area'); portugalMap('chartPortugal', arr); }
-function update(){ const arr=filtered(); const fixedRows=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA; updateKpis(arr); monthlySingleYearChart('chartMonthly',fixedRows); monthlyFilteredChart('chartMonthlyFiltered',arr); updateTables(arr); updateAdvanced(arr); window.dmCheckWeeklyReport?.(); }
+function update(){ const arr=filtered(); const fixedRows=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA; updateKpis(arr); monthlyChart('chartMonthly',fixedRows); monthlyFilteredChart('chartMonthlyFiltered',arr); updateTables(arr); updateAdvanced(arr); window.dmCheckWeeklyReport?.(); }
 
 function initTabs(){
  document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -1097,7 +1122,7 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
         <div class="detail-kpi"><span>Quantidade</span><strong id="commercialQty">0</strong></div>
       </div>
       <div class="grid">
-        <div class="panel wide"><h2>Comparação fixa entre anos e meses <span class="chart-title-note">· não muda com os filtros e mantém os critérios do utilizador</span></h2><div id="commercialCompareLegend" class="commercial-legend"></div><div id="commercialCompareChart" class="chart empty">Sem dados</div></div>
+        <div class="panel wide"><h2>Comparação entre anos e meses por vendedor <span class="chart-title-note">· muda apenas com o vendedor selecionado no Centro de Pesquisa Comercial</span></h2><div id="commercialCompareLegend" class="commercial-legend"></div><div id="commercialCompareChart" class="chart empty">Sem dados</div></div>
         <div class="panel wide"><h2>Evolução comercial de acordo com os filtros <span class="chart-title-note">· atualiza com vendedor, cliente, artigo e filtros gerais</span></h2><div id="commercialFilteredLegend" class="commercial-legend"></div><div id="commercialFilteredChart" class="chart empty">Sem dados</div></div>
         <div class="commercial-secondary-grid wide">
           <div class="panel"><h2>Áreas de negócio <span class="chart-title-note">· ligado à pesquisa</span></h2><div id="commercialAreaChart" class="chart empty">Sem dados</div></div>
@@ -1316,7 +1341,15 @@ if(window.DATA&&DATA.length){update()}else{renderDrill()}
     root.className='chart';root.innerHTML=svg+'</svg>';
     bindCommercialDetails(root,rows);
   }
-  function render(){refreshOptions();const rows=researchRows();const fixedRows=(typeof roleVisibleRows==='function')?roleVisibleRows(Array.isArray(DATA)?DATA:[]):baseRows();renderSummary(rows);renderChart(fixedRows,'commercialCompareChart','commercialCompareLegend');renderChart(rows,'commercialFilteredChart','commercialFilteredLegend');renderAreaChart(rows);renderCommercialMap(rows);renderTable(rows);if(!c$('calendarSeller')?.options.length||c$('calendarSeller').options.length<=1)refreshCalendarSellers();renderCalendar();}
+  function commercialSellerComparisonRows(){
+    const allRows=Array.isArray(DATA)?DATA:[];
+    let rows=(typeof roleVisibleRows==='function')?roleVisibleRows(allRows):(isAdminProfile()?allRows:allRows.filter(r=>!isHiddenCommercialValue(r.vendedor)));
+    const seller=clean(c$('commercialSeller')?.value||'');
+    if(!seller) return rows;
+    const sellerToken=typeof norm==='function'?norm(seller):seller.toUpperCase();
+    return rows.filter(r=>(typeof norm==='function'?norm(clean(r.vendedor)):clean(r.vendedor).toUpperCase())===sellerToken);
+  }
+  function render(){refreshOptions();const rows=researchRows();const compareRows=commercialSellerComparisonRows();renderSummary(rows);renderChart(compareRows,'commercialCompareChart','commercialCompareLegend');renderChart(rows,'commercialFilteredChart','commercialFilteredLegend');renderAreaChart(rows);renderCommercialMap(rows);renderTable(rows);if(!c$('calendarSeller')?.options.length||c$('calendarSeller').options.length<=1)refreshCalendarSellers();renderCalendar();}
 
   const calendarState={month:new Date(new Date().getFullYear(),new Date().getMonth(),1),events:[]};
   const sellerColors=['#0657ff','#00a651','#7c3aed','#ff9900','#ef2f78','#06b6d4','#22c55e','#f97316','#6366f1','#14b8a6'];
@@ -2317,7 +2350,7 @@ h1{font-size:24px}
    table('tableABCDistritos',data,[{h:'Classe',k:'abc'},{h:'Distrito',k:'nome'},{h:'Sem IVA',f:r=>eur2.format(r.sem_iva),num:true},{h:'Peso',f:r=>r.peso.toFixed(1).replace('.',',')+'%',num:true},{h:'Acum.',f:r=>r.acum.toFixed(1).replace('.',',')+'%',num:true}]);
  }
  const oldDetailRows=window.detailRows;
- window.detailRows=function(type,value){
+ window.detailRows=function(type,value,sourceChart=''){
    if(type==='clienteGrupo'){
      const arr=typeof filtered==='function'?filtered():allRows();
      return arr.filter(r=>String(r.grupo_cliente||'N/D')===value);
@@ -2330,7 +2363,9 @@ h1{font-size:24px}
      const arr=typeof filtered==='function'?filtered():allRows();
      return arr.filter(r=>String(r.grupo||'N/D')===value);
    }
-   return oldDetailRows(type,value);
+   // Preserva a origem do clique. No gráfico comparativo fixo (chartMonthly),
+   // o detalhe deve ignorar o filtro global de ano e usar o ano da barra clicada.
+   return oldDetailRows(type,value,sourceChart);
  };
  const oldDetailLabel=window.detailLabel;
  window.detailLabel=function(type){return type==='clienteGrupo'?'Grupo de cliente':type==='associadoCliente'?'Associado':type==='grupo'?'Grupo':oldDetailLabel(type)};
