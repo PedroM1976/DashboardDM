@@ -2182,6 +2182,7 @@ h1{font-size:24px}
   .dm-target-track{height:18px;background:#e8eef7;border-radius:999px;overflow:hidden;margin-top:12px;position:relative}
   .dm-target-fill{height:100%;border-radius:999px;min-width:2px;transition:width .25s}
   .dm-target-percent{font-size:13px;font-weight:900;margin-top:7px}
+  .dm-business-targets-panel{margin:0 0 18px;padding:20px 24px}
   #chartGrupoClientes{height:760px}
   #chartABCDistritos{height:760px}
   @media(max-width:900px){.dm-target-grid{grid-template-columns:1fr}#chartGrupoClientes,#chartABCDistritos{height:620px}}
@@ -2222,12 +2223,20 @@ h1{font-size:24px}
    return {rows,year,month};
  }
  function ensureUI(){
-   const areaPanel=t$('chartAreasYear')?.closest('.panel');
-   if(areaPanel&&!t$('businessTargets')){
-     const box=document.createElement('div');
-     box.id='businessTargets';
-     box.innerHTML='<h3 style="margin:22px 0 6px">Metas mensais por área de negócio</h3><div id="businessTargetNote" class="smallnote"></div><div id="businessTargetGrid" class="dm-target-grid"></div>';
-     areaPanel.appendChild(box);
+   const weekStrip=t$('dmWeekStrip');
+   const monthStrip=t$('dmMonthStrip');
+   const anchor=weekStrip||monthStrip;
+   let targets=t$('businessTargets');
+   if(anchor){
+     if(!targets){
+       targets=document.createElement('section');
+       targets.id='businessTargets';
+       targets.className='panel dm-business-targets-panel';
+       targets.innerHTML='<h3 style="margin:0 0 6px">Metas mensais por área de negócio</h3><div id="businessTargetNote" class="smallnote"></div><div id="businessTargetGrid" class="dm-target-grid"></div>';
+     }
+     if(anchor.nextElementSibling!==targets){
+       anchor.parentNode.insertBefore(targets,anchor.nextSibling);
+     }
    }
    const clientGrid=document.querySelector('#tab-clientes .grid');
    if(clientGrid&&!t$('chartGrupoClientes')){
