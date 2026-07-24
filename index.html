@@ -245,6 +245,8 @@ h1{font-size:24px}
   <div class="filter"><label>Cliente</label><select id="cliente"></select></div>
   <div class="filter"><label>Área</label><select id="area"></select></div>
   <div class="filter"><label>Grupo</label><select id="grupo"></select></div>
+  <div class="filter"><label>Família</label><select id="familia"></select></div>
+  <div class="filter"><label>Subfamília</label><select id="subfamilia"></select></div>
 </section>
 
 <section class="article-search">
@@ -447,6 +449,8 @@ function buildMeta(){
    clientes:canonicalizeField('cliente'),
    areas:canonicalizeField('area'),
    grupos:canonicalizeField('grupo'),
+   familias:canonicalizeField('familia'),
+   subfamilias:canonicalizeField('subfamilia'),
    semanas:canonicalizeField('semana')
  };
 }
@@ -507,6 +511,8 @@ function initSelects(){
  fillSelect('cliente',META.clientes);
  fillSelect('area',META.areas);
  fillSelect('grupo',META.grupos);
+ fillSelect('familia',META.familias||[]);
+ fillSelect('subfamilia',META.subfamilias||[]);
 }
 document.querySelectorAll('select').forEach(s=>s.addEventListener('change',update));
 setTimeout(()=>{ const ap=$('artigoPesquisa'); if(ap) ap.addEventListener('input',update); },0);
@@ -519,6 +525,8 @@ function filtered(){
  const clientValue=($('cliente')&&$('cliente').value)||'';
  const areaValue=($('area')&&$('area').value)||'';
  const groupValue=($('grupo')&&$('grupo').value)||'';
+ const familyValue=($('familia')&&$('familia').value)||'';
+ const subfamilyValue=($('subfamilia')&&$('subfamilia').value)||'';
  return roleVisibleRows(DATA).filter(r=>
    (!yearValue||Number(r.ano)===yearValue)&&
    (!monthValue||Number(r.mes)===monthValue)&&
@@ -527,6 +535,8 @@ function filtered(){
    (!clientValue||r.cliente===clientValue)&&
    (!areaValue||r.area===areaValue)&&
    (!groupValue||r.grupo===groupValue)&&
+   (!familyValue||r.familia===familyValue)&&
+   (!subfamilyValue||r.subfamilia===subfamilyValue)&&
    (!q||(r.search_blob||norm((r.artigo||'')+' '+(r.descricao||'')+' '+(r.artigo_desc||''))).includes(q))
  );
 }
@@ -895,7 +905,7 @@ else setTimeout(loadDefaultExcel,150);
   const originalDetailRows=window.detailRows;
   const originalDetailLabel=window.detailLabel;
   function anyFilter(){
-    return ['ano','mes','semana','vendedor','cliente','area','grupo','distrito','artigoPesquisa'].some(id=>{const e=document.getElementById(id);return e&&String(e.value||'').trim()!==''});
+    return ['ano','mes','semana','vendedor','cliente','area','grupo','familia','subfamilia','distrito','artigoPesquisa'].some(id=>{const e=document.getElementById(id);return e&&String(e.value||'').trim()!==''});
   }
   function rowsForCharts(){return anyFilter()?filtered():DATA}
   window.detailRows=function(type,value){
@@ -982,7 +992,7 @@ const levels=[
 ];
 let drillIndex=0, drillPath=[];
 function hasActiveFilters(){
- return ['ano','mes','semana','vendedor','cliente','area','grupo','distrito','artigoPesquisa'].some(id=>{const e=document.getElementById(id);return e&&String(e.value||'').trim()!==''});
+ return ['ano','mes','semana','vendedor','cliente','area','grupo','familia','subfamilia','distrito','artigoPesquisa'].some(id=>{const e=document.getElementById(id);return e&&String(e.value||'').trim()!==''});
 }
 function weightedMarginPct(r){return r.sem_iva ? r.margem/r.sem_iva*100 : 0}
 function ensureUI(){
@@ -1507,10 +1517,16 @@ h1{font-size:24px}
 }
 </style>
 
-</head><body>
+</head><body onload="setTimeout(()=>window.print(),500)">
     <div class="head"><div><h1>Calendário comercial</h1><div class="sub">${cEsc(calendarState.month.toLocaleDateString('pt-PT',{month:'long',year:'numeric'}))}</div></div>${logo?`<img src="${logo}">`:''}</div>
     <table><thead><tr><th>Data</th><th>Hora</th><th>Vendedor</th><th>Área de negócio</th><th>Assunto</th><th>Cliente</th></tr></thead><tbody>${events.map(e=>`<tr><td>${cEsc(e.date)}</td><td>${cEsc(e.time)}</td><td>${cEsc(e.seller)}</td><td>${cEsc(e.area||'')}</td><td>${cEsc(e.subject)}</td><td>${cEsc(e.client||'')}</td></tr>`).join('')}</tbody></table>
-    <div class="credit">Desenvolvido By Domingos &amp; Morgado</div><script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>
+    <div class="credit">Desenvolvido By Domingos &amp; Morgado</div>
+
+
+
+
+
+
 </body></html>`);
     win.document.close();
   }
@@ -1564,67 +1580,29 @@ h1{font-size:24px}
       table{width:100%;border-collapse:collapse;table-layout:fixed}
       th,td{padding:2.5px 3px;border-bottom:1px solid #dbe3ef;font-size:6.8px;line-height:1.12}
       th{background:#f8fafc;text-transform:uppercase;color:#64748b;font-size:6px}
-      .num{text-align:right}
+      .num{text-align:right}.no-chart{padding:30px;text-align:center;color:#64748b}
       .credit{text-align:right;margin-top:5px;color:#64748b;font-size:6.5px;font-weight:bold}
       @page{size:A4 landscape;margin:0}
       @media print{thead{display:table-header-group}tr{page-break-inside:avoid}}
-    </style>
-<style id="mobile-fix-overrides">
-@media (max-width:1024px){
-.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
-#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
-#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
-#tab-produto .dm-product-chart,#commercialCompareChart,#commercialFilteredChart,#commercialAreaChart,#commercialPortugalMap{
-height:420px!important}
-.catalog-sidebar{position:static!important;max-height:none!important}
-.catalog-shell{grid-template-columns:1fr!important}
-}
-@media (max-width:768px){
-body{overflow-x:hidden}
-.head{flex-direction:column;align-items:flex-start}
-.brand{flex-wrap:wrap}
-.upload{grid-template-columns:1fr!important}
-.filters{grid-template-columns:1fr!important}
-.cards{grid-template-columns:1fr!important}
-.tables{grid-template-columns:1fr!important}
-.grid.two,.commercial-secondary-grid,.dm-product-grid{grid-template-columns:1fr!important}
-.calendar-day{min-height:90px}
-.drawer{width:100vw}
-.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
-#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
-#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
-#tab-produto .dm-product-chart,#commercialCompareChart,#commercialFilteredChart,#commercialAreaChart,#commercialPortugalMap{
-height:340px!important;padding:8px}
-svg text{font-size:10px!important}
-.logo{width:110px}
-h1{font-size:24px}
-}
-</style>
-
-</head><body>
+    </style></head><body>
       <section class="page">
         <div class="head"><div><h1>Centro de pesquisa comercial</h1><div class="sub">${cEsc(title)}</div></div>${logoSrc?`<img src="${logoSrc}" alt="Logo">`:''}</div>
         <div class="kpis">
           <div class="kpi"><span>Sem IVA</span><b>${cMoney(sumRows(rows,'valor_liquido'))}</b></div>
           <div class="kpi"><span>Quantidade</span><b>${cNum(sumRows(rows,'quantidade'))}</b></div>
         </div>
-        <h2>Comparação entre anos e meses</h2>
-        <div class="chart">${chartHtml}</div>
+        <h2>Comparação entre anos e meses</h2><div class="chart">${chartHtml}</div>
         <h2>Resumo do drill-down</h2>
-        <table><thead><tr><th style="width:62%">Descrição</th><th class="num">Sem IVA</th><th class="num">Qtd.</th></tr></thead>
-        <tbody>${grouped.map(g=>`<tr><td>${cEsc(g.name)}</td><td class="num">${cMoney(g.net)}</td><td class="num">${cNum(g.qty)}</td></tr>`).join('')}</tbody></table>
+        <table><thead><tr><th style="width:62%">Descrição</th><th class="num">Sem IVA</th><th class="num">Qtd.</th></tr></thead><tbody>${grouped.map(g=>`<tr><td>${cEsc(g.name)}</td><td class="num">${cMoney(g.net)}</td><td class="num">${cNum(g.qty)}</td></tr>`).join('')}</tbody></table>
         <div class="credit">Desenvolvido By Domingos &amp; Morgado</div>
       </section>
-
       <section class="page">
         <div class="head"><div><h1>Calendário comercial</h1><div class="sub">${cEsc(calendarState.month.toLocaleDateString('pt-PT',{month:'long',year:'numeric'}))}</div></div>${logoSrc?`<img src="${logoSrc}" alt="Logo">`:''}</div>
-        <table><thead><tr><th style="width:10%">Data</th><th style="width:7%">Hora</th><th style="width:17%">Vendedor</th><th style="width:18%">Área de negócio</th><th style="width:24%">Assunto</th><th style="width:24%">Cliente</th></tr></thead>
-        <tbody>${calendarEvents.length?calendarEvents.map(e=>`<tr><td>${cEsc(e.date)}</td><td>${cEsc(e.time)}</td><td>${cEsc(e.seller)}</td><td>${cEsc(e.area||'')}</td><td>${cEsc(e.subject)}</td><td>${cEsc(e.client||'')}</td></tr>`).join(''):'<tr><td colspan="6">Sem marcações para o período selecionado.</td></tr>'}</tbody></table>
+        <table><thead><tr><th style="width:10%">Data</th><th style="width:7%">Hora</th><th style="width:17%">Vendedor</th><th style="width:18%">Área de negócio</th><th style="width:24%">Assunto</th><th style="width:24%">Cliente</th></tr></thead><tbody>${calendarEvents.length?calendarEvents.map(e=>`<tr><td>${cEsc(e.date)}</td><td>${cEsc(e.time)}</td><td>${cEsc(e.seller)}</td><td>${cEsc(e.area||'')}</td><td>${cEsc(e.subject)}</td><td>${cEsc(e.client||'')}</td></tr>`).join(''):'<tr><td colspan="6">Sem marcações para o período selecionado.</td></tr>'}</tbody></table>
         <div class="credit">Desenvolvido By Domingos &amp; Morgado</div>
       </section>
       <script>window.onload=()=>setTimeout(()=>window.print(),650)<\/script>
-
-</body></html>`);
+    </body></html>`);
     win.document.close();
   }
   function bind(){
@@ -1885,53 +1863,21 @@ h1{font-size:24px}
     const rows=selectedRows(),logo=document.querySelector('header .logo')?.getAttribute('src')||'';
     const grouped=groupRows(rows,m$('mgArticle').value?'cliente':(m$('mgSubfamily').value?'artigo_desc':'area')).slice(0,30);
     const chart=m$('managementTrendChart')?.querySelector('svg');
-    let chartHtml='';if(chart){const c=chart.cloneNode(true);c.setAttribute('height','360');c.style.height='360px';chartHtml=c.outerHTML}
-    const win=window.open('','_blank');if(!win){alert('Permita janelas pop-up para exportar o PDF.');return}
+    let chartHtml='<div style="padding:40px;text-align:center;color:#64748b">Sem dados para apresentar.</div>';
+    if(chart){const c=chart.cloneNode(true);c.setAttribute('height','360');c.style.height='360px';chartHtml=c.outerHTML}
+    const net=sumRows(rows,'valor_liquido'),margin=sumRows(rows,'margem');
+    const win=window.open('','_blank');
+    if(!win){alert('Permita janelas pop-up para exportar o PDF.');return}
     win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório de Gestão</title><style>
-      body{font-family:Arial;color:#0b1533;padding:18px;font-size:9px}.head{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0657ff;padding-bottom:8px}.head img{width:120px}
+      *{box-sizing:border-box}body{font-family:Arial;color:#0b1533;padding:18px;font-size:9px}.head{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #0657ff;padding-bottom:8px}.head img{width:120px;max-height:55px;object-fit:contain}
       h1{margin:0}.sub{color:#64748b}.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:9px 0}.kpi{border:1px solid #dbe3ef;border-radius:7px;padding:7px}.kpi span{font-size:7px;color:#64748b}.kpi b{display:block;font-size:12px;margin-top:3px}
-      .chart{height:380px;border:1px solid #dbe3ef;border-radius:8px;padding:5px;overflow:hidden}.chart svg{width:100%;height:360px}
-      table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:4px;border-bottom:1px solid #dbe3ef}.num{text-align:right}.credit{text-align:right;margin-top:10px;color:#64748b;font-weight:bold}@page{size:A4 landscape;margin:10mm}
-    </style>
-<style id="mobile-fix-overrides">
-@media (max-width:1024px){
-.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
-#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
-#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
-#tab-produto .dm-product-chart,#commercialCompareChart,#commercialFilteredChart,#commercialAreaChart,#commercialPortugalMap{
-height:420px!important}
-.catalog-sidebar{position:static!important;max-height:none!important}
-.catalog-shell{grid-template-columns:1fr!important}
-}
-@media (max-width:768px){
-body{overflow-x:hidden}
-.head{flex-direction:column;align-items:flex-start}
-.brand{flex-wrap:wrap}
-.upload{grid-template-columns:1fr!important}
-.filters{grid-template-columns:1fr!important}
-.cards{grid-template-columns:1fr!important}
-.tables{grid-template-columns:1fr!important}
-.grid.two,.commercial-secondary-grid,.dm-product-grid{grid-template-columns:1fr!important}
-.calendar-day{min-height:90px}
-.drawer{width:100vw}
-.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
-#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
-#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
-#tab-produto .dm-product-chart,#commercialCompareChart,#commercialFilteredChart,#commercialAreaChart,#commercialPortugalMap{
-height:340px!important;padding:8px}
-svg text{font-size:10px!important}
-.logo{width:110px}
-h1{font-size:24px}
-}
-</style>
-
-</head><body><div class="head"><div><h1>Relatório de Gestão</h1><div class="sub">${mEsc(m$('mgBreadcrumb').textContent)}</div></div>${logo?`<img src="${logo}">`:''}</div>
-    <div class="kpis"><div class="kpi"><span>Sem IVA</span><b>${mMoney(sumRows(rows,'valor_liquido'))}</b></div><div class="kpi"><span>IVA</span><b>${mMoney(sumRows(rows,'iva'))}</b></div><div class="kpi"><span>Com IVA</span><b>${mMoney(sumRows(rows,'valor_total'))}</b></div><div class="kpi"><span>Margem</span><b>${mMoney(sumRows(rows,'margem'))}</b></div><div class="kpi"><span>Margem %</span><b>${(sumRows(rows,'valor_liquido')?sumRows(rows,'margem')/sumRows(rows,'valor_liquido')*100:0).toFixed(1).replace('.',',')}%</b></div></div>
+      .chart{height:380px;border:1px solid #dbe3ef;border-radius:8px;padding:5px;overflow:hidden}.chart svg{width:100%;height:360px}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{padding:4px;border-bottom:1px solid #dbe3ef}.num{text-align:right}.credit{text-align:right;margin-top:10px;color:#64748b;font-weight:bold}@page{size:A4 landscape;margin:10mm}
+    </style></head><body><div class="head"><div><h1>Relatório de Gestão</h1><div class="sub">${mEsc(m$('mgBreadcrumb').textContent)}</div></div>${logo?`<img src="${logo}" alt="Logo">`:''}</div>
+    <div class="kpis"><div class="kpi"><span>Sem IVA</span><b>${mMoney(net)}</b></div><div class="kpi"><span>IVA</span><b>${mMoney(sumRows(rows,'iva'))}</b></div><div class="kpi"><span>Com IVA</span><b>${mMoney(sumRows(rows,'valor_total'))}</b></div><div class="kpi"><span>Margem</span><b>${mMoney(margin)}</b></div><div class="kpi"><span>Margem %</span><b>${(net?margin/net*100:0).toFixed(1).replace('.',',')}%</b></div></div>
     <div class="chart">${chartHtml}</div>
     <table><thead><tr><th>Descrição</th><th class="num">Sem IVA</th><th class="num">Com IVA</th><th class="num">Margem</th></tr></thead><tbody>${grouped.map(g=>`<tr><td>${mEsc(g.nome)}</td><td class="num">${mMoney(g.sem_iva)}</td><td class="num">${mMoney(g.com_iva)}</td><td class="num">${mMoney(g.margem)}</td></tr>`).join('')}</tbody></table>
-    <div class="credit">Desenvolvido By Domingos &amp; Morgado</div><script>window.onload=()=>setTimeout(()=>window.print(),600)<\/script>
-
-</body></html>`);win.document.close();
+    <div class="credit">Desenvolvido By Domingos &amp; Morgado</div><script>window.onload=()=>setTimeout(()=>window.print(),600)<\/script></body></html>`);
+    win.document.close();
   }
   function bind(){
     ['mgArea','mgGroup','mgFamily','mgSubfamily','mgArticle','mgClient','mgSupplier'].forEach(id=>m$(id)?.addEventListener('change',render));
@@ -2695,7 +2641,7 @@ function currentRows(){
  return rows;
 }
 function filterDescription(){
- const parts=[];[['ano','Ano'],['mes','Mês'],['semana','Semana'],['vendedor','Vendedor'],['cliente','Cliente'],['area','Área'],['grupo','Grupo'],['distrito','Distrito']].forEach(([id,label])=>{const e=R(id);if(e&&e.value){parts.push(label+': '+(e.options?e.options[e.selectedIndex]?.text:e.value))}});
+ const parts=[];[['ano','Ano'],['mes','Mês'],['semana','Semana'],['vendedor','Vendedor'],['cliente','Cliente'],['area','Área'],['grupo','Grupo'],['familia','Família'],['subfamilia','Subfamília'],['distrito','Distrito']].forEach(([id,label])=>{const e=R(id);if(e&&e.value){parts.push(label+': '+(e.options?e.options[e.selectedIndex]?.text:e.value))}});
  const rp=R('reportWeekPrimary')?.value;if(rp)parts.push('Semana do relatório: '+rp);const rcw=R('reportWeekCompare')?.value;if(rcw)parts.push('Comparação: '+rcw);const art=R('artigoPesquisa')?.value?.trim();if(art)parts.push('Pesquisa artigo: '+art);const rc=R('reportClientSearch')?.value?.trim();if(rc)parts.push('Cliente no relatório: '+rc);const rs=R('reportSellerSearch')?.value?.trim();if(rs)parts.push('Vendedor no relatório: '+rs);return parts.length?parts.join(' · '):'Sem filtros ativos — total da base de dados';
 }
 function reportTitle(type){return R('reportName')?.value.trim()||(type==='daily'?'Relatório semanal de vendas':'Comparação de vendas por anos e meses')}
@@ -2737,44 +2683,15 @@ function dailyHtml(rows){const limit=Number(R('reportLimit')?.value)||6,hasCompa
 function compareHtml(rows){const dim=R('reportDimension')?.value||'area',labels={area:'Área de negócio',cliente:'Cliente',vendedor:'Vendedor',artigo_desc:'Artigo'},limit=Number(R('reportLimit')?.value)||6;return `${commonHead('compare',rows)}<div class="rp-grid"><div><h3>Comparação mensal entre anos</h3><div class="rp-chart">${lineChart(rows)}</div></div>${clientInfo(rows)}</div><div class="rp-tables">${tableHtml('Ranking — '+labels[dim],rGroup(rows,dim),limit,'Qtd.')}${tableHtml('Áreas de negócio',rGroup(rows,'area'),limit,'Clientes')}${tableHtml('Clientes',rGroup(rows,'cliente'),limit,'')}${tableHtml('Vendedores',rGroup(rows,'vendedor'),limit,'Clientes')}</div><div class="rp-foot">Comparação por ano/mês · Valores sem IVA · Desenvolvido By Domingos &amp; Morgado</div>`}
 function renderReport(){ensureReports();const root=R('reportPreview');if(!root)return;const rows=currentRows(),type=R('reportType')?.value||'daily';root.innerHTML=rows.length?(type==='daily'?dailyHtml(rows):compareHtml(rows)):'<div class="empty">Sem dados para os filtros selecionados.</div>'}
 function exportReportPdf(){
- renderReport();const preview=R('reportPreview');if(!preview)return;const type=R('reportType')?.value||'daily',win=window.open('','_blank');if(!win){alert('Permita janelas pop-up para exportar o PDF.');return}
+ renderReport();
+ const preview=R('reportPreview');
+ if(!preview)return;
+ const type=R('reportType')?.value||'daily';
+ const win=window.open('','_blank');
+ if(!win){alert('Permita janelas pop-up para exportar o PDF.');return}
  const css=`*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#0b1533;font-size:9px}.page{padding:6mm 7mm}.rp-head{display:flex;justify-content:space-between;border-bottom:2px solid #0657ff;padding-bottom:5px;margin-bottom:6px}.rp-title{font-size:18px;font-weight:900}.rp-sub{font-size:8px;color:#64748b;line-height:1.35}.rp-logo{width:95px;max-height:38px;object-fit:contain}.rp-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:6px}.rp-kpi{border:1px solid #dbe3ef;border-radius:5px;padding:5px;background:#f8fbff}.rp-kpi span{display:block;font-size:7px;text-transform:uppercase;color:#64748b;font-weight:bold}.rp-kpi b{font-size:12px}.rp-grid{display:grid;grid-template-columns:1.55fr .85fr;gap:6px}.rp-chart{height:205px;border:1px solid #dbe3ef;border-radius:5px;padding:3px}.rp-chart svg{width:100%;height:100%}.rp-box{border:1px solid #dbe3ef;border-radius:5px;padding:5px;overflow:hidden}.rp-box h3,h3{font-size:10px;margin:0 0 4px}.rp-tables{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{padding:2.6px 3px;border-bottom:1px solid #e2e8f0;font-size:7.4px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}th{font-size:6.6px;text-transform:uppercase;color:#64748b;text-align:left}.num{text-align:right}.rp-foot{text-align:right;font-size:6.5px;color:#64748b;font-weight:bold;margin-top:4px}@page{size:A4 landscape;margin:0}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}`;
- win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${rEsc(reportTitle(type))}</title><style>${css}</style>
-<style id="mobile-fix-overrides">
-@media (max-width:1024px){
-.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
-#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
-#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
-#tab-produto .dm-product-chart,#commercialCompareChart,#commercialFilteredChart,#commercialAreaChart,#commercialPortugalMap{
-height:420px!important}
-.catalog-sidebar{position:static!important;max-height:none!important}
-.catalog-shell{grid-template-columns:1fr!important}
-}
-@media (max-width:768px){
-body{overflow-x:hidden}
-.head{flex-direction:column;align-items:flex-start}
-.brand{flex-wrap:wrap}
-.upload{grid-template-columns:1fr!important}
-.filters{grid-template-columns:1fr!important}
-.cards{grid-template-columns:1fr!important}
-.tables{grid-template-columns:1fr!important}
-.grid.two,.commercial-secondary-grid,.dm-product-grid{grid-template-columns:1fr!important}
-.calendar-day{min-height:90px}
-.drawer{width:100vw}
-.chart,#chartMonthly,#chartPortugal,#chartYoY,#chartAreasYear,
-#tab-clientes #chartClientes,#tab-artigos #chartArtigos,#tab-comercial #chartVendedores,
-#tab-geografia #chartAreas,#tab-geografia #chartPortugal,
-#tab-produto .dm-product-chart,#commercialCompareChart,#commercialFilteredChart,#commercialAreaChart,#commercialPortugalMap{
-height:340px!important;padding:8px}
-svg text{font-size:10px!important}
-.logo{width:110px}
-h1{font-size:24px}
-}
-</style>
-
-</head><body><div class="page">${preview.innerHTML}</div><script>window.onload=()=>setTimeout(()=>window.print(),650)<\/script>
-
-</body></html>`);win.document.close();
+ win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${rEsc(reportTitle(type))}</title><style>${css}</style></head><body><div class="page">${preview.innerHTML}</div><script>window.onload=()=>setTimeout(()=>window.print(),650)<\/script></body></html>`);
+ win.document.close();
 }
 const oldUpdate=window.update;if(typeof oldUpdate==='function')window.update=function(){const out=oldUpdate.apply(this,arguments);setTimeout(()=>{if(R('reportPreview')){populateReportSearchLists();renderReport()}},30);return out};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{ensureReports();setTimeout(renderReport,250)});else{ensureReports();setTimeout(renderReport,250)}
@@ -4143,5 +4060,87 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
+
+<style id="dmPeriodDetailDrawerStyles">
+.dm-period-detail-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px;margin-bottom:18px}
+.dm-period-detail-card{border:1px solid var(--line);border-radius:14px;padding:12px;background:linear-gradient(135deg,#fff,#f7faff)}
+.dm-period-detail-card span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:900}
+.dm-period-detail-card strong{display:block;font-size:20px;margin-top:5px}
+.dm-period-detail-section{margin-top:20px}.dm-period-detail-section h3{margin:0 0 10px;font-size:15px}
+.dm-period-bars{display:grid;gap:8px}.dm-period-bar-row{display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(140px,2fr) auto;gap:8px;align-items:center;font-size:12px}
+.dm-period-bar-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;color:#334155}
+.dm-period-bar-track{height:16px;border-radius:999px;background:#edf2f7;overflow:hidden}.dm-period-bar-fill{height:100%;min-width:3px;border-radius:999px;background:linear-gradient(90deg,#0657ff,#06b6d4)}
+.dm-period-bar-value{text-align:right;font-weight:900;font-variant-numeric:tabular-nums}
+.dm-period-detail-table{width:100%;border-collapse:collapse}.dm-period-detail-table th,.dm-period-detail-table td{padding:8px;border-bottom:1px solid var(--line);font-size:12px}.dm-period-detail-table td:last-child,.dm-period-detail-table th:last-child{text-align:right}
+@media(max-width:650px){.dm-period-detail-summary{grid-template-columns:1fr 1fr}.dm-period-bar-row{grid-template-columns:1fr}.dm-period-bar-value{text-align:left}}
+</style>
+<script id="dmPeriodDetailDrawerScript">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=v=>new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(Number(v)||0);
+const num=v=>new Intl.NumberFormat('pt-PT',{maximumFractionDigits:0}).format(Number(v)||0);
+function rowsFor(period){
+ try{
+  const all=Array.isArray(window.DATA)?window.DATA:(typeof DATA!=='undefined'&&Array.isArray(DATA)?DATA:[]);
+  const base=typeof window.roleVisibleRows==='function'?window.roleVisibleRows(all):(typeof roleVisibleRows==='function'?roleVisibleRows(all):all);
+  if(period==='month'){
+   const title=$('dmMonthTitle')?.textContent||'';
+   const yearMatch=title.match(/(20\d{2})/);
+   const monthNames=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+   const normalized=title.toLocaleLowerCase('pt-PT');
+   const monthIndex=monthNames.findIndex(name=>normalized.includes(name));
+   const now=new Date();
+   const year=yearMatch?Number(yearMatch[1]):now.getFullYear();
+   const month=monthIndex>=0?monthIndex+1:now.getMonth()+1;
+   return base.filter(r=>Number(r.ano)===year&&Number(r.mes)===month);
+  }
+  const title=$('dmWeekTitle')?.textContent||'';
+  const weekMatch=title.match(/semana\s+(\d{1,2})/i);
+  const yearMatch=title.match(/(20\d{2})/);
+  const now=new Date();
+  const d=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
+  d.setUTCDate(d.getUTCDate()+4-(d.getUTCDay()||7));
+  const y=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  const currentWeek=Math.ceil((((d-y)/86400000)+1)/7);
+  const week=weekMatch?Number(weekMatch[1]):currentWeek;
+  const year=yearMatch?Number(yearMatch[1]):d.getUTCFullYear();
+  const weekNo=v=>{const m=String(v||'').match(/(?:SEMANA|SEM|S|WEEK)?\s*[-:]?\s*(\d{1,2})(?!\d)/i);return m?Number(m[1]):0};
+  const exact=base.filter(r=>weekNo(r.semana)===week&&Number(r.ano)===year);
+  return exact.length?exact:base.filter(r=>weekNo(r.semana)===week);
+ }catch(err){console.error('Erro ao obter linhas do período:',err);return []}
+}
+function groupRows(rows,key){
+ const m=new Map();
+ rows.forEach(r=>{const name=String(r[key]||'Sem indicação').trim()||'Sem indicação';if(!m.has(name))m.set(name,{name,value:0,qtd:0,clientes:new Set(),linhas:0});const x=m.get(name);x.value+=Number(r.valor_liquido)||0;x.qtd+=Number(r.quantidade)||0;x.linhas++;if(r.cliente)x.clientes.add(r.cliente)});
+ return [...m.values()].sort((a,b)=>b.value-a.value);
+}
+function bars(title,data){
+ const top=data.slice(0,12),max=Math.max(1,...top.map(x=>x.value));
+ return '<div class="dm-period-detail-section"><h3>'+esc(title)+'</h3><div class="dm-period-bars">'+(top.length?top.map(x=>'<div class="dm-period-bar-row"><div class="dm-period-bar-label" title="'+esc(x.name)+'">'+esc(x.name)+'</div><div class="dm-period-bar-track"><div class="dm-period-bar-fill" style="width:'+Math.max(2,x.value/max*100).toFixed(1)+'%"></div></div><div class="dm-period-bar-value">'+money(x.value)+'</div></div>').join(''):'<div class="empty">Sem dados.</div>')+'</div></div>';
+}
+function table(title,data){
+ return '<div class="dm-period-detail-section"><h3>'+esc(title)+'</h3><table class="dm-period-detail-table"><thead><tr><th>Nome</th><th>Clientes</th><th>Quantidade</th><th>Vendas sem IVA</th></tr></thead><tbody>'+data.slice(0,20).map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+num(x.clientes.size)+'</td><td>'+num(x.qtd)+'</td><td>'+money(x.value)+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function open(period){
+ const rows=rowsFor(period),areas=groupRows(rows,'area'),sellers=groupRows(rows,'vendedor');
+ const net=rows.reduce((a,r)=>a+(Number(r.valor_liquido)||0),0),total=rows.reduce((a,r)=>a+(Number(r.valor_total)||0),0),margin=rows.reduce((a,r)=>a+(Number(r.margem)||0),0),clients=new Set(rows.map(r=>r.cliente).filter(Boolean)).size;
+ const title=period==='month'?($('dmMonthTitle')?.textContent||'Resumo mensal'):($('dmWeekTitle')?.textContent||'Resumo semanal');
+ $('drawerTitle').textContent=title;
+ $('drawerSub').textContent='Análise por área de negócio e vendedor · '+num(rows.length)+' linhas';
+ $('drawerBody').innerHTML='<div class="dm-period-detail-summary"><div class="dm-period-detail-card"><span>Vendas sem IVA</span><strong>'+money(net)+'</strong></div><div class="dm-period-detail-card"><span>Vendas com IVA</span><strong>'+money(total)+'</strong></div><div class="dm-period-detail-card"><span>Margem</span><strong>'+money(margin)+'</strong></div><div class="dm-period-detail-card"><span>Clientes</span><strong>'+num(clients)+'</strong></div></div>'+bars('Gráfico por área de negócio',areas)+bars('Gráfico por vendedor',sellers)+table('Detalhe por área de negócio',areas)+table('Detalhe por vendedor',sellers);
+ $('drawerBackdrop').classList.add('open');$('detailDrawer').classList.add('open');$('detailDrawer').setAttribute('aria-hidden','false');
+}
+function bind(){
+ document.querySelectorAll('#dmMonthStrip [data-period="month"]').forEach(b=>{b.onclick=e=>{e.preventDefault();e.stopPropagation();open('month')}});
+ document.querySelectorAll('#dmWeekStrip [data-period="week"],#dmWeekStrip .dm-week-kpi').forEach(b=>{b.onclick=e=>{e.preventDefault();e.stopPropagation();open('week')}});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bind,700));else setTimeout(bind,700);
+new MutationObserver(()=>bind()).observe(document.documentElement,{childList:true,subtree:true});
+window.dmOpenPeriodDetail=open;
+})();
+</script>
+
 </body>
 </html>
