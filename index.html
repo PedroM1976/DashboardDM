@@ -1735,17 +1735,7 @@ h1{font-size:24px}
       const footer=document.querySelector('main .footer'); const main=document.querySelector('main'); if(main){footer?main.insertBefore(section,footer):main.appendChild(section);}
     }
 
-    document.querySelectorAll('.tab-btn').forEach(btn=>{
-      if(btn.dataset.mgBound)return;
-      btn.dataset.mgBound='1';
-      btn.addEventListener('click',()=>{
-        document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
-        btn.classList.add('active');
-        m$(btn.dataset.tab)?.classList.add('active');
-        if(btn.dataset.tab==='tab-gestao') setTimeout(render,0);
-      });
-    });
+    
   }
 
   function baseRows(){
@@ -1886,7 +1876,7 @@ h1{font-size:24px}
     m$('mgPdf').onclick=exportPdf;
   }
   function boot(){
-    insertTab();bind();render();
+    insertTab();initTabs();bind();render();
     const original=window.update;
     if(typeof original==='function'&&!original.__managementCenter){
       const wrapped=function(){const out=original.apply(this,arguments);setTimeout(render,0);return out};
