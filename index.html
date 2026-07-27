@@ -235,7 +235,7 @@ h1{font-size:24px}
   <button class="secondary" id="pickHandle" type="button">Escolher com auto-refresh</button>
   <button class="accent" id="reloadBtn" type="button">Atualizar agora</button>
   <button id="pdfBtn" type="button">Exportar PDF</button>
-  <div class="status" id="status" hidden></div>
+  <div class="status" id="status" aria-live="polite"></div>
 </section>
 <section class="filters">
   <div class="filter"><label>Ano</label><select id="ano"></select></div>
@@ -796,7 +796,9 @@ function initTabs(){
      // Correção: alguns browsers não pintam bem SVGs criados em painéis ocultos.
      // Ao ativar uma aba, redesenhamos os gráficos já com a aba visível.
      requestAnimationFrame(()=>{
-       if(DATA && DATA.length) update();
+       // Os dados já estão em memória. Não recalcular todos os painéis enquanto
+       // vários deles estão ocultos, pois alguns navegadores medem esses gráficos
+       // com largura/altura zero e acabam por os substituir por conteúdo vazio.
        window.dispatchEvent(new Event('resize'));
      });
      const tabs=document.querySelector('.tabs');
@@ -858,6 +860,7 @@ async function loadDefaultExcel(){
    ? [activeDefaultExcelFile,...DEFAULT_EXCEL_CANDIDATES.filter(name=>name!==activeDefaultExcelFile)]
    : DEFAULT_EXCEL_CANDIDATES;
  let lastError='ficheiro não encontrado';
+ $('status').hidden=false;
  $('status').textContent='A procurar automaticamente o ficheiro Excel…';
  for(const filename of candidates){
    try{
