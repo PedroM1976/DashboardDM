@@ -2851,6 +2851,21 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
    };
    window.__dmWeeklyReportPatched=true;
  }
+ function installReportObserver(){
+   // Função em falta na versão anterior. Mantém o histórico/relatórios ativos
+   // sem interromper o carregamento automático do Excel.
+   patchReportRender();
+   renderWeeklyStatus();
+   if((typeof DATA!=='undefined'?DATA:[]).length) captureSnapshot();
+   if(window.__dmReportObserverInstalled) return;
+   const host=byId('tab-relatorios') || document.body;
+   if(typeof MutationObserver==='function' && host){
+     const observer=new MutationObserver(()=>{patchReportRender();renderWeeklyStatus();});
+     observer.observe(host,{childList:true,subtree:true});
+     window.__dmReportObserver=observer;
+   }
+   window.__dmReportObserverInstalled=true;
+ }
  function init(){setupCollapsedEntry();patchGlobalSearch();installReportObserver();}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(init,50));else setTimeout(init,50);
  // Existing update is called after every Excel reload; capture only changed versions.
