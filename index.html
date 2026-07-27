@@ -788,20 +788,28 @@ function updateTables(arr){ const clientes=group(arr,'cliente'), artigos=group(a
 function update(){ const arr=filtered(); const fixedRows=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA; updateKpis(arr); monthlyChart('chartMonthly',fixedRows); monthlyFilteredChart('chartMonthlyFiltered',arr); updateTables(arr); updateAdvanced(arr); window.dmCheckWeeklyReport?.(); }
 
 function initTabs(){
- document.querySelectorAll('.tab-btn').forEach(btn=>{
-   btn.onclick=()=>{
+ document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
+   // Não substituir onclick: várias abas adicionais têm ações próprias.
+   // O marcador evita adicionar o mesmo controlador sempre que o Excel é recarregado.
+   if(btn.dataset.dmMainTabBound==='1') return;
+   btn.dataset.dmMainTabBound='1';
+   btn.addEventListener('click',()=>{
      const id=btn.getAttribute('data-tab');
-     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
-     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id===id));
-     // Correção: alguns browsers não pintam bem SVGs criados em painéis ocultos.
-     // Ao ativar uma aba, redesenhamos os gráficos já com a aba visível.
+     const panel=id?document.getElementById(id):null;
+     if(!panel) return;
+
+     document.querySelectorAll('.tab-btn[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));
+     document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active',p===panel));
+
+     // DATA permanece na memória. Apenas redesenhamos depois de a aba ficar visível.
      requestAnimationFrame(()=>{
-       if(DATA && DATA.length) update();
+       if(Array.isArray(DATA) && DATA.length && typeof update==='function') update();
        window.dispatchEvent(new Event('resize'));
      });
+
      const tabs=document.querySelector('.tabs');
-     if(tabs) tabs.scrollIntoView({behavior:'smooth', block:'start'});
-   };
+     if(tabs) tabs.scrollIntoView({behavior:'smooth',block:'start'});
+   });
  });
 }
 
@@ -4140,41 +4148,22 @@ new MutationObserver(()=>bind()).observe(document.documentElement,{childList:tru
 window.dmOpenPeriodDetail=open;
 })();
 </script>
-... último script do ficheiro ...
 
-</script>
-
-<script id="dmUniversalTabsFix">
-(function () {
+<script id="dmTabsSafetyFix">
+(function(){
   'use strict';
-
-  document.addEventListener('click', function (event) {
-    const button = event.target.closest('.tab-btn[data-tab]');
-    if (!button) return;
-
-    const tabId = button.dataset.tab;
-    const panel = document.getElementById(tabId);
-    if (!panel) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-
-    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
-      btn.classList.toggle('active', btn===button);
-    });
-
-    document.querySelectorAll('.tab-panel').forEach(p=>{
-      p.classList.toggle('active', p===panel);
-    });
-
-    requestAnimationFrame(()=>{
-      if(typeof window.update==='function' && Array.isArray(DATA) && DATA.length){
-        window.update();
-      }
+  // Proteção final: ao regressar a uma aba, os dados globais nunca são limpos.
+  // As ações específicas de cada aba continuam a executar normalmente.
+  document.addEventListener('click',function(event){
+    const button=event.target.closest('.tab-btn[data-tab]');
+    if(!button) return;
+    const panel=document.getElementById(button.dataset.tab);
+    if(!panel) return;
+    requestAnimationFrame(function(){
+      if(Array.isArray(DATA)&&DATA.length&&typeof update==='function') update();
       window.dispatchEvent(new Event('resize'));
     });
-  }, true);
+  });
 })();
 </script>
 
