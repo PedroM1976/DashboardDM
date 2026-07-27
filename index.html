@@ -787,7 +787,14 @@ function updateAdvanced(arr){
 }
 
 function updateTables(arr){ const clientes=group(arr,'cliente'), artigos=group(arr,'artigo_desc'), vendedores=group(arr,'vendedor'), areas=group(arr,'area'); const money=r=>eur2.format(r.sem_iva), margem=r=>eur2.format(r.margem), pct=r=>r.sem_iva?(r.margem/r.sem_iva*100).toFixed(1).replace('.',',')+'%':'-'; table('tableClientes', clientes.slice(0,10), [{h:'Cliente',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Margem %',f:pct,num:true}]); table('tableArtigos', artigos.slice(0,10), [{h:'Artigo',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Qtd',f:r=>numf.format(r.qtd),num:true}]); table('tableVendedores', vendedores.slice(0,10), [{h:'Vendedor',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'Margem',f:margem,num:true}]); table('tableAreas', areas, [{h:'Área',k:'nome'},{h:'Sem IVA',f:money,num:true},{h:'IVA',f:r=>eur2.format(r.iva),num:true},{h:'Com IVA',f:r=>eur2.format(r.com_iva),num:true},{h:'Margem',f:margem,num:true},{h:'Margem %',f:pct,num:true},{h:'Clientes',f:r=>numf.format(r.clientes.size),num:true},{h:'Artigos',f:r=>numf.format(r.artigos.size),num:true}]); barChart('chartClientes',clientes.slice(0,10),'nome','sem_iva','cliente'); barChart('chartVendedores',vendedores.slice(0,10),'nome','sem_iva','vendedor'); barChart('chartArtigos',artigos.slice(0,10),'nome','sem_iva','artigo'); barChart('chartAreas',areas.slice(0,12),'nome','sem_iva','area'); portugalMap('chartPortugal', arr); }
-function update(){ const arr=filtered(); const fixedRows=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA; updateKpis(arr); monthlyChart('chartMonthly',fixedRows); monthlyFilteredChart('chartMonthlyFiltered',arr); updateTables(arr); updateAdvanced(arr); window.dmCheckWeeklyReport?.(); }
+function update(){
+ const generalSearch=$('artigoPesquisa');
+ if(generalSearch){
+   const bad=norm(generalSearch.value||'');
+   if(bad==='INFORMACAO AO UTILIZADOR') generalSearch.value='';
+ }
+ const arr=filtered(); const fixedRows=typeof roleVisibleRows==='function'?roleVisibleRows(DATA):DATA; updateKpis(arr); monthlyChart('chartMonthly',fixedRows); monthlyFilteredChart('chartMonthlyFiltered',arr); updateTables(arr); updateAdvanced(arr); window.dmCheckWeeklyReport?.();
+}
 
 function initTabs(){
  document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -799,6 +806,8 @@ function initTabs(){
      // Ao ativar uma aba, redesenhamos os gráficos já com a aba visível.
      requestAnimationFrame(()=>{
        window.DATA=DATA;
+       const generalSearch=$('artigoPesquisa');
+       if(generalSearch && norm(generalSearch.value||'')==='INFORMACAO AO UTILIZADOR') generalSearch.value='';
        if(DATA && DATA.length) update();
        window.dispatchEvent(new Event('resize'));
      });
@@ -903,18 +912,41 @@ $('reloadBtn').addEventListener('click', reloadFile);
 $('pdfBtn').addEventListener('click', ()=>window.print());
 initTabs(); initSelects(); update();
 let dmDefaultLoadStarted=false;
-async function dmBootDefaultExcel(){
- if(dmDefaultLoadStarted) return;
+async function dmBootDefaultExcel(forceRetry=false){
+ if(DATA && DATA.length){
+   window.DATA=DATA;
+   update();
+   return true;
+ }
+ if(dmDefaultLoadStarted && !forceRetry) return false;
  dmDefaultLoadStarted=true;
  try{
    if(window.__xlsxReady) await window.__xlsxReady;
  }catch(e){
-   console.warn('Leitor Excel indisponível no primeiro arranque:',e);
+   console.warn('Leitor Excel indisponível no arranque:',e);
  }
- await loadDefaultExcel();
+ try{
+   await loadDefaultExcel();
+   return !!(DATA && DATA.length);
+ }catch(e){
+   console.error('Falha no carregamento automático do Excel:',e);
+   dmDefaultLoadStarted=false;
+   const st=$('status');
+   if(st){ st.hidden=false; st.textContent='Erro no carregamento automático: '+(e?.message||e); }
+   return false;
+ }
 }
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(dmBootDefaultExcel,250),{once:true});
-else setTimeout(dmBootDefaultExcel,250);
+window.dmEnsureDataLoaded=async function(forceRetry=false){
+ const ok=await dmBootDefaultExcel(forceRetry);
+ if(ok){
+   window.DATA=DATA;
+   initSelects();
+   update();
+ }
+ return ok;
+};
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>window.dmEnsureDataLoaded(false),250),{once:true});
+else setTimeout(()=>window.dmEnsureDataLoaded(false),250);
 </script>
 <script id="dmEnhanceScript">
 (function(){
@@ -2180,9 +2212,9 @@ h1{font-size:24px}
     const active=document.querySelector('.tab-btn.active');if(!active||active.classList.contains('role-hidden')){const first=[...document.querySelectorAll('.tab-btn[data-tab]:not(.role-hidden)')][0];if(first)activateTab(first.dataset.tab)}
     if(a$('authUserLabel'))a$('authUserLabel').textContent=AUTH_USERS[currentUser].label;renderAdminPrefs();
   }
-  function login(){const role=a$('authRole').value,password=a$('authPassword').value;if(!AUTH_USERS[role]||AUTH_USERS[role].password!==password){a$('authError').textContent='Perfil ou palavra-passe incorretos.';return}currentUser=role;window.dmCurrentUser=role;sessionStorage.setItem('dmCurrentUser',role);a$('authOverlay').classList.add('hidden');document.body.classList.remove('auth-locked');applyRole();if(typeof initSelects==='function'&&Array.isArray(DATA)&&DATA.length)initSelects();if(typeof window.update==='function')window.update();showEntryNote();window.dmCheckWeeklyReport?.()}
+  function login(){const role=a$('authRole').value,password=a$('authPassword').value;if(!AUTH_USERS[role]||AUTH_USERS[role].password!==password){a$('authError').textContent='Perfil ou palavra-passe incorretos.';return}currentUser=role;window.dmCurrentUser=role;sessionStorage.setItem('dmCurrentUser',role);a$('authOverlay').classList.add('hidden');document.body.classList.remove('auth-locked');applyRole();if(typeof initSelects==='function'&&Array.isArray(DATA)&&DATA.length)initSelects();if(typeof window.update==='function')window.update();setTimeout(async()=>{if(!Array.isArray(window.DATA)||!window.DATA.length){await window.dmEnsureDataLoaded?.(true)}else{if(typeof initSelects==='function')initSelects();if(typeof window.update==='function')window.update()}},150);showEntryNote();window.dmCheckWeeklyReport?.()}
   function logout(){sessionStorage.removeItem('dmCurrentUser');window.dmCurrentUser='';currentUser=null;const sellerSelect=a$('vendedor');if(sellerSelect)sellerSelect.disabled=false;a$('authPassword').value='';a$('authError').textContent='';a$('authOverlay').classList.remove('hidden');document.body.classList.add('auth-locked')}
-  function boot(){insertLogin();insertSessionControls();insertAdminTab();insertWeeklyReportTab();const saved=sessionStorage.getItem('dmCurrentUser');if(saved&&AUTH_USERS[saved]){currentUser=saved;a$('authOverlay').classList.add('hidden');document.body.classList.remove('auth-locked');applyRole();window.dmCheckWeeklyReport?.()}}
+  function boot(){insertLogin();insertSessionControls();insertAdminTab();insertWeeklyReportTab();const saved=sessionStorage.getItem('dmCurrentUser');if(saved&&AUTH_USERS[saved]){currentUser=saved;window.dmCurrentUser=saved;a$('authOverlay').classList.add('hidden');document.body.classList.remove('auth-locked');applyRole();setTimeout(()=>window.dmEnsureDataLoaded?.(true),150);window.dmCheckWeeklyReport?.()}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
 </script>
@@ -2771,7 +2803,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
      limparPreenchimentoIndevido();
      setTimeout(limparPreenchimentoIndevido,100);
      setTimeout(limparPreenchimentoIndevido,500);
+     setTimeout(limparPreenchimentoIndevido,1500);
+     setTimeout(limparPreenchimentoIndevido,3000);
      window.addEventListener('pageshow',limparPreenchimentoIndevido);
+     window.addEventListener('focus',limparPreenchimentoIndevido);
+     document.addEventListener('visibilitychange',()=>{if(!document.hidden)limparPreenchimentoIndevido()});
+     document.querySelector('.tabs')?.addEventListener('click',limparPreenchimentoIndevido,true);
    }
    const note=document.createElement('span');note.className='dm-search-note';note.textContent='Atualiza todo o dashboard';
    search.querySelector('.filter')?.appendChild(note);
