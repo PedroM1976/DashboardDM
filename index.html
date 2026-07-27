@@ -252,7 +252,7 @@ h1{font-size:24px}
 <section class="article-search">
   <div class="filter">
     <label>Pesquisa por artigo / descrição</label>
-    <input type="search" id="artigoPesquisa" placeholder="Escreva código, artigo ou descrição..." autocomplete="off">
+    <input type="search" id="artigoPesquisa" name="dm_pesquisa_geral_unica" value="" placeholder="Escreva código, artigo ou descrição..." autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-form-type="other">
   </div>
 </section>
 <div class="actions"><button class="secondary" onclick="resetFilters()">Limpar filtros</button><button onclick="downloadCSV()">Exportar CSV filtrado</button></div>
@@ -368,6 +368,8 @@ h1{font-size:24px}
 </aside>
 <script>
 let DATA=[], META={anos:[],vendedores:[],clientes:[],areas:[],grupos:[]}, currentFile=null, fileHandle=null, timer=null, autoExcelSource=false;
+window.DATA=DATA;
+window.META=META;
 const DEFAULT_EXCEL_BASENAME='Vendas_preenchido_062026';
 const DEFAULT_EXCEL_CANDIDATES=[
   DEFAULT_EXCEL_BASENAME+'.xlsx',
@@ -796,9 +798,8 @@ function initTabs(){
      // Correção: alguns browsers não pintam bem SVGs criados em painéis ocultos.
      // Ao ativar uma aba, redesenhamos os gráficos já com a aba visível.
      requestAnimationFrame(()=>{
-       // Os dados já estão em memória. Não recalcular todos os painéis enquanto
-       // vários deles estão ocultos, pois alguns navegadores medem esses gráficos
-       // com largura/altura zero e acabam por os substituir por conteúdo vazio.
+       window.DATA=DATA;
+       if(DATA && DATA.length) update();
        window.dispatchEvent(new Event('resize'));
      });
      const tabs=document.querySelector('.tabs');
@@ -848,8 +849,9 @@ async function parseFile(file){
  }
  if(!rows.length) throw new Error('A primeira folha está vazia ou não tem cabeçalhos reconhecíveis.');
  DATA=rows.map(rowToData).filter(r=>r.ano||r.valor_liquido||r.valor_total);
+ window.DATA=DATA;
  if(!DATA.length) throw new Error('Foram lidas '+rows.length+' linhas, mas não foram encontradas colunas de Ano ou Valor Líquido. Verifique os cabeçalhos.');
- buildMeta(); initTabs(); initSelects(); update();
+ buildMeta(); window.META=META; initTabs(); initSelects(); update();
  window.dmRefreshReportWeeks?.();
  setTimeout(()=>{ if(DATA && DATA.length){ update(); window.dmRefreshReportWeeks?.(); } },80);
  $('footer').innerHTML='&copy; Desenvolvido By Domingos &amp; Morgado';
@@ -900,8 +902,19 @@ $('pickHandle').addEventListener('click', async()=>{ autoExcelSource=false; if(!
 $('reloadBtn').addEventListener('click', reloadFile);
 $('pdfBtn').addEventListener('click', ()=>window.print());
 initTabs(); initSelects(); update();
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(loadDefaultExcel,150));
-else setTimeout(loadDefaultExcel,150);
+let dmDefaultLoadStarted=false;
+async function dmBootDefaultExcel(){
+ if(dmDefaultLoadStarted) return;
+ dmDefaultLoadStarted=true;
+ try{
+   if(window.__xlsxReady) await window.__xlsxReady;
+ }catch(e){
+   console.warn('Leitor Excel indisponível no primeiro arranque:',e);
+ }
+ await loadDefaultExcel();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(dmBootDefaultExcel,250),{once:true});
+else setTimeout(dmBootDefaultExcel,250);
 </script>
 <script id="dmEnhanceScript">
 (function(){
@@ -2740,7 +2753,26 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
    const input=byId('artigoPesquisa');
    const label=search.querySelector('label');
    if(label)label.textContent='Pesquisa geral — artigo / descrição / cliente';
-   if(input)input.placeholder='Escreva artigo, descrição ou nome do cliente…';
+   if(input){
+     input.placeholder='Escreva artigo, descrição ou nome do cliente…';
+     // Evita que o navegador ou gestores de palavras-passe preencham esta pesquisa
+     // com textos de outros campos, como "Informação ao utilizador".
+     input.setAttribute('autocomplete','new-password');
+     input.setAttribute('name','dm_pesquisa_geral_unica');
+     input.setAttribute('data-lpignore','true');
+     input.setAttribute('data-form-type','other');
+     const limparPreenchimentoIndevido=()=>{
+       const v=String(input.value||'').trim();
+       if(v==='Informação ao utilizador' || v==='Informacao ao utilizador'){
+         input.value='';
+         input.dispatchEvent(new Event('input',{bubbles:true}));
+       }
+     };
+     limparPreenchimentoIndevido();
+     setTimeout(limparPreenchimentoIndevido,100);
+     setTimeout(limparPreenchimentoIndevido,500);
+     window.addEventListener('pageshow',limparPreenchimentoIndevido);
+   }
    const note=document.createElement('span');note.className='dm-search-note';note.textContent='Atualiza todo o dashboard';
    search.querySelector('.filter')?.appendChild(note);
    const btn=byId('dmToggleFilters');
