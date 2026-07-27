@@ -4140,6 +4140,43 @@ new MutationObserver(()=>bind()).observe(document.documentElement,{childList:tru
 window.dmOpenPeriodDetail=open;
 })();
 </script>
+... último script do ficheiro ...
+
+</script>
+
+<script id="dmUniversalTabsFix">
+(function () {
+  'use strict';
+
+  document.addEventListener('click', function (event) {
+    const button = event.target.closest('.tab-btn[data-tab]');
+    if (!button) return;
+
+    const tabId = button.dataset.tab;
+    const panel = document.getElementById(tabId);
+    if (!panel) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
+      btn.classList.toggle('active', btn===button);
+    });
+
+    document.querySelectorAll('.tab-panel').forEach(p=>{
+      p.classList.toggle('active', p===panel);
+    });
+
+    requestAnimationFrame(()=>{
+      if(typeof window.update==='function' && Array.isArray(DATA) && DATA.length){
+        window.update();
+      }
+      window.dispatchEvent(new Event('resize'));
+    });
+  }, true);
+})();
+</script>
 
 </body>
 </html>
