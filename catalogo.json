@@ -203,7 +203,7 @@
     },
     {
       "codigo": "34-N635S",
-      "foto": false,
+      "foto": true,
       "pdf": false
     },
     {
@@ -1628,7 +1628,7 @@
     },
     {
       "codigo": "13-65102",
-      "foto": false,
+      "foto": true,
       "pdf": false
     },
     {
@@ -1798,7 +1798,7 @@
     },
     {
       "codigo": "13-65103",
-      "foto": false,
+      "foto": true,
       "pdf": false
     },
     {
@@ -2283,7 +2283,7 @@
     },
     {
       "codigo": "43-F65605LSI55K",
-      "foto": false,
+      "foto": true,
       "pdf": false
     },
     {
